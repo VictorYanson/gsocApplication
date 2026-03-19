@@ -6,12 +6,14 @@ This document is meant as an application for Google’s Summer of Code 2026. It 
 
 ### Personal information
 
-Full name: 			Victor Yanson  
-Occupation:			Freelance Developer  
-OSM account name:		[VictorYanson](https://www.openstreetmap.org/user/VictorYanson)  
-Github account name:		[VictorYanson](https://github.com/VictorYanson)  
-Email:				[victor.yanson@outlook.com](mailto:victor.yanson@outlook.com)  
-LinkedIn:			[www.linkedin.com/in/victoryanson](http://www.linkedin.com/in/victoryanson)
+| Field | Detail |
+| :--- | :--- |
+| **Full name** | Victor Yanson |
+| **Occupation** | Freelance Developer |
+| **OSM account** | [VictorYanson](https://www.openstreetmap.org/user/VictorYanson) |
+| **GitHub account** | [VictorYanson](https://github.com/VictorYanson) |
+| **Email** | [victor.yanson@outlook.com](mailto:victor.yanson@outlook.com) |
+| **LinkedIn** | [linkedin.com/in/victoryanson](http://www.linkedin.com/in/victoryanson) |
 
 ### Bio
 
@@ -139,7 +141,7 @@ graph TD
     A -->|"Read"| C  
 ```
 
-> **Note:** The GSoC the scope will be limited to server based routing engines. For more info on the adoption of OSM mobile apps see ‘[Mobile applications](#mobile-applications)’.
+**Note:** The GSoC the scope will be limited to server based routing engines. For more info on the adoption of OSM mobile apps see ‘[Mobile applications](#mobile-applications)’.
 
 #### Internal pipeline
 
