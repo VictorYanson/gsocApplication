@@ -152,6 +152,13 @@ The choice for Valhalla’s initial integration is due to its **widespread adopt
 Having originally proposed the addition of helper functions in Valhalla’s core C++ logic, I was gently guided to the [Live Traffic API](https://valhalla.github.io/valhalla/mjolnir/historical_traffic/) by the [maintainers](https://github.com/valhalla/valhalla/discussions/5944). This steered the technical direction toward a **data-driven integration** rather than a structural one. By utilizing Valhalla's native support for binary traffic tiles (.tar) `closure-sync` can influence routing costs without modifying the engine's source code. This approach ensures **long-term maintainability** and allows the sidecar to remain independent of Valhalla's release cycles.
 
 #### Internal pipeline
+```mermaid
+flowchart LR
+		B[Fetch traffic API]
+    B --> C[Decode OpenLR segments]
+    C --> D[Resolve to GraphIds]
+    D --> E[Build & replace traffic.tar]
+```
 
 * fetch traffic API  
 * decode OpenLR segments  
