@@ -120,7 +120,7 @@ When elaborating a possible solution, a handful of key considerations were kept 
 2. **Non-blocking:** Protecting the engine’s hot path from obstructions, even if the `closure-sync` service malfunctions.  
 3. **Native performance:** Maintaining near-zero performance overhead during runtime.
 
-#### Basic architecture
+#### Architecture
 
 The project adopts a **sidecar deployment pattern** to fulfill the core requirements of ease of integration. In this model `closure-sync` runs as a lightweight and **independent container** alongside the primary routing engine within the **same host environment**. By decoupling the synchronization logic from the routing core the architecture ensures a **non-blocking app lifecycle.** 
 
@@ -141,7 +141,15 @@ graph TD
     A -->|"Read"| C  
 ```
 
-**Note:** The GSoC the scope will be limited to server based routing engines. For more info on the adoption of OSM mobile apps see ‘[Mobile applications](#mobile-applications)’.
+#### Valhalla
+
+Before moving on, it’s important to mention that for the GSoC project `closure-sync`’s **scope** will be limited to the Valhalla routing engine integration. For more information on the continuation of the project after GSoC see ‘[Continuation](?tab=t.lh72md2ytuu#heading=h.b3b327fctu5s)’.
+
+The choice for Valhalla’s initial integration is due to its **widespread adoption** in the OSM community and its compatibility with the existing `closures.osm.ch`. Moreover, Valhalla’s **`pyvalhalla`** library offers an excellent high-level interface for graph interactions.
+
+##### Approach
+
+Having originally proposed the addition of helper functions in Valhalla’s core C++ logic, I was gently guided to the [Live Traffic API](https://valhalla.github.io/valhalla/mjolnir/historical_traffic/) by the [maintainers](https://github.com/valhalla/valhalla/discussions/5944). This steered the technical direction toward a **data-driven integration** rather than a structural one. By utilizing Valhalla's native support for binary traffic tiles (.tar) `closure-sync` can influence routing costs without modifying the engine's source code. This approach ensures **long-term maintainability** and allows the sidecar to remain independent of Valhalla's release cycles.
 
 #### Internal pipeline
 
