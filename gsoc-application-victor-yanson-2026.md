@@ -149,50 +149,45 @@ The choice for Valhalla’s initial integration is thanks to its **widespread ad
 
 ##### Approach
 
-Having originally proposed the addition of helper functions in Valhalla’s core C++ logic, I was gently guided to the [Live Traffic API](https://valhalla.github.io/valhalla/mjolnir/historical_traffic/) by the [maintainers](https://github.com/valhalla/valhalla/discussions/5944). This steered the technical direction toward a **data-driven integration** rather than a structural one. By pivoting to Valhalla's native support for binary traffic tiles (.tar), `closure-sync` can influence routing costs without modifying the engine's source code.
+Having originally proposed the addition of helper functions in Valhalla’s core C++ logic, I was gently guided to the [Live Traffic API](https://valhalla.github.io/valhalla/mjolnir/historical_traffic/) by the [maintainers](https://github.com/valhalla/valhalla/discussions/5944). This steered the technical direction toward a **data-driven integration** rather than a structural one. By pivoting to Valhalla's native support for binary traffic tiles (.tar), `closure-sync` can influence routing costs at runtime without modifying the engine's source code.
 
 #### Internal pipeline
 
 `closure-sync`'s internal flow can be summarized by the following the steps:
 ```mermaid
 flowchart LR
-		B[Fetch traffic API]
+    B[Fetch & diff closure data]
     B --> C[Parse traffic geometry]
-    C --> D[Resolve to Graph IDs]
+    C --> D[Resolve to graph IDs]
     D --> E[Build & replace traffic.tar]
 ```
-##### Fetch traffic API
+##### Fetch & diff extrenal closure data
 
-...
+* HTTP poll
+* User configured interval
+* Voletile community data merits a 5 minute minimum interval
+* Returns **Delta Object**
 
 ##### Parse traffic geometry
 
-...
+* Responses include both GeoJSON **AND** OpenLR
+* OpenLR is preferred for its map-agnosticism
+* OpenLR currently [not fully supported](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/backend/app/services/openlr_service.py#L138-L139) by `closures.osm.ch`
+* For OpenLR decoding PoC `openlr` pip package can be used
+* If possible later on, create `pyvalhalla` binding for internal [`openlr.h` decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h)
+* Returns **Location Reference Object**
 
-##### Resolve to Graph IDs
+##### Resolve to graph IDs
 
-...
+* `trace_attributes` [probibalistic option](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#attribute-filters-trace_attributes-only)
+* `LRP Routing` [deterministic option](https://github.com/valhalla/valhalla/issues/3564#issuecomment-2731281526)
 
-##### Builde & replace traffic.tar
+##### Build & replace traffic.tar
 
-...
-
-#### Additional information
-
-##### Valhalla
-
-- Traffic Tiles `mmap`  
-- 
-
-##### Python
-
-- Personal familiarity  
-- Small base container footprint (compared to JS runtimes)  
-- Shared language between `closures.osm.ch`   
-- Libraries:  
-  - `pyvalhalla`  
-  - `openlr`  
-  - `requests`
+* Memory struct creation
+* File IO (python std lib)
+* Traffic Tiles `mmap`
+* Data synchronisation: `Baldr` tile cache system
 
 #### Benefits & limitations
 
@@ -202,7 +197,7 @@ flowchart LR
 
 #### General
 
-- Parallellisation
+- [Parallellisation](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029)
 
 #### Graphhopper
 
@@ -212,7 +207,7 @@ flowchart LR
 
 - Comaps and OSMand  
 - Adjusted architecture   
-  - single host env per routing app →shared public traffic feed  
+  - single host env per routing app→shared public traffic feed  
   - Better suited for closures.osm.ch
 
 ### Schedule for project completion
