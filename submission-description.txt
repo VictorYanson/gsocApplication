@@ -1,0 +1,5 @@
+- Submission by Victor Yanson
+- Project: bridge between closures.osm.ch and dynamic routing engines
+- Initial idea by Simon Poole
+- 350 hour project
+- For technical technical overview read: 'High-level summary', 'Architecture', and 'Internal pipeline'
