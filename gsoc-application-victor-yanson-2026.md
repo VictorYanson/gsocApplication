@@ -145,26 +145,37 @@ graph TD
 
 Before moving on, it’s important to mention that for the GSoC project `closure-sync`’s **scope** will be limited to the Valhalla routing engine integration. For more information on the continuation of the project after GSoC see ‘[Continuation](?tab=t.lh72md2ytuu#heading=h.b3b327fctu5s)’.
 
-The choice for Valhalla’s initial integration is due to its **widespread adoption** in the OSM community and its compatibility with the existing `closures.osm.ch`. Moreover, Valhalla’s **`pyvalhalla`** library offers an excellent high-level interface for graph interactions.
+The choice for Valhalla’s initial integration is thanks to its **widespread adoption** in the OSM community and its compatibility with the existing `closures.osm.ch` structures. Moreover, Valhalla’s **`pyvalhalla`** library offers an excellent high-level interface for graph interactions.
 
 ##### Approach
 
-Having originally proposed the addition of helper functions in Valhalla’s core C++ logic, I was gently guided to the [Live Traffic API](https://valhalla.github.io/valhalla/mjolnir/historical_traffic/) by the [maintainers](https://github.com/valhalla/valhalla/discussions/5944). This steered the technical direction toward a **data-driven integration** rather than a structural one. By utilizing Valhalla's native support for binary traffic tiles (.tar) `closure-sync` can influence routing costs without modifying the engine's source code. This approach ensures **long-term maintainability** and allows the sidecar to remain independent of Valhalla's release cycles.
+Having originally proposed the addition of helper functions in Valhalla’s core C++ logic, I was gently guided to the [Live Traffic API](https://valhalla.github.io/valhalla/mjolnir/historical_traffic/) by the [maintainers](https://github.com/valhalla/valhalla/discussions/5944). This steered the technical direction toward a **data-driven integration** rather than a structural one. By pivoting to Valhalla's native support for binary traffic tiles (.tar), `closure-sync` can influence routing costs without modifying the engine's source code.
 
 #### Internal pipeline
+
+`closure-sync`'s internal flow can be summarized by the following the steps:
 ```mermaid
 flowchart LR
 		B[Fetch traffic API]
-    B --> C[Decode OpenLR segments]
-    C --> D[Resolve to GraphIds]
+    B --> C[Parse traffic geometry]
+    C --> D[Resolve to Graph IDs]
     D --> E[Build & replace traffic.tar]
 ```
+##### Fetch traffic API
 
-* fetch traffic API  
-* decode OpenLR segments  
-* match segments → Valhalla edges  
-* build traffic.tar  
-* replace traffic.tar
+...
+
+##### Parse traffic geometry
+
+...
+
+##### Resolve to Graph IDs
+
+...
+
+##### Builde & replace traffic.tar
+
+...
 
 #### Additional information
 
