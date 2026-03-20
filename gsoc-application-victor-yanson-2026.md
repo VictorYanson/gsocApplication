@@ -43,7 +43,7 @@ That being said, I would describe my entry into the community as a pleasant lear
 
 #### Contributions
 
-##### Valhalla {#valhalla}
+##### Valhalla
 
 * [**PR #5884**](https://github.com/valhalla/valhalla/pull/5884)**:** Added Valhalla version logging to `docker-entrypoint` on startup. (**Merged**)  
 * [**Issue #5757**](https://github.com/valhalla/valhalla/issues/5757#issuecomment-4061257896)**/[#5758](https://github.com/valhalla/valhalla/issues/5758#issuecomment-4061380869):** Technical follow-up on vector tile overzoom and live traffic layer implementation.
@@ -163,24 +163,27 @@ flowchart LR
 ```
 ##### Fetch & diff extrenal closure data
 
-Before requesting any data from `closures.osm.ch` the service finds out what area the core graph covers by extracting the **bbox** from the Valhalla tile directory (example: `/data/valhalla_tiles/'2/756/728.gph`). Thereafter, `closure-sync` will poll `closure.osm.ch` on a user-configured time interval via HTTP by hitting its `GET /api/v1/closures` endpoint.
+Before requesting any data from `closures.osm.ch` the service finds out what area the core graph covers by extracting the **bbox** from the **Valhalla tile directory** (example: `/data/valhalla_tiles/'2/756/728.gph'`). Thereafter, `closure-sync` will poll `closure.osm.ch` on a user-configured **time interval** via HTTP by hitting its `GET /api/v1/closures` endpoint.
 
-On a succesful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closure.osm.ch` will be extended to accept a `updated_after=timestamp` query parameter to reduce network overhead. Nevetheless, `closure-sync` will require fallback diffing capabilities. 
+On a succesful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closure.osm.ch` will be extended to accept a `updated_after=timestamp` query parameter to reduce network overhead. Nevertheless, `closure-sync` will require fallback diffing capabilities warranting an interal option. 
 
-At the end of this step a **delta object** will be created containing the relevant closures and their metadata.
+<!-- The result of this step is a **delta object** containing the relevant closures and their metadata. -->
 
 ##### Parse traffic geometry
 
-Despite returned closure objects from `closures.osm.ch` containing both GeoJSON and OpenLR for closure geometries, **OpenLR** is generally preferred for Valhalla [edge resolution](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824018) due to it's ineherent **map-agnosticism**.
+Despite returned closure objects from `closures.osm.ch` containing both **GeoJSON** and **OpenLR** for closure geometries, OpenLR is generally preferred for Valhalla [edge resolution](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824018) due to it's ineherent **map-agnosticism**.
 
 Furthermore, while it is true the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), it unfortunatly doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
 
-This step finalizes by creating a **Location Reference Object**.
+<!-- This step finalizes by creating a **Location Reference Object**. -->
 
 ##### Resolve to graph IDs
 
-* `trace_attributes` [probibalistic option](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#attribute-filters-trace_attributes-only)
-* `LRP Routing` [deterministic option](https://github.com/valhalla/valhalla/issues/3564#issuecomment-2731281526)
+At this point, we hit a fork in the road where two viable approaches can possibly be used. Firstly, `pyvalhalla` already features a [`trace_attributes` method](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#trace-attributes-action) that takes a **GPS trace** or a set of **latitude/longitude positions** and returns the **attributes** of the graph edges along the trace including their `edge.id`. This call uses `Meili` to map match the coordinates to the nearest valid graph edges introducing some **probabilistic** properties to the resolution, leading to an expected accuracy of [around 90%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028).
+
+Alternativly, you can treat each **union of two Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectivly increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a valid contiguous road section.
+
+While the first option works to setup the **initial functionallity** and can increase **stability** by serving as a **fallback resolver**, the second option should ideally adopted as the **main approach**. 
 
 ##### Build & replace traffic.tar
 
@@ -189,10 +192,10 @@ This step finalizes by creating a **Location Reference Object**.
 * Traffic Tiles `mmap`
 * Data synchronisation: `Baldr` tile cache system
 
-#### Benefits & limitations
-
+#### Limitations & opportunities
 * OpenLR currently [not fully supported](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/backend/app/services/openlr_service.py#L138-L139) by `closures.osm.ch` —— I'd like to fix it
 * I'd like to make the `openlr.h` python binding
+* Interpreter version->Compiled version
 
 ### Continuation
 
@@ -204,7 +207,7 @@ This step finalizes by creating a **Location Reference Object**.
 
 …
 
-#### Mobile applications {#mobile-applications}
+#### Mobile applications
 
 - Comaps and OSMand  
 - Adjusted architecture   
