@@ -32,8 +32,8 @@ My day-to-day language is **TypeScript**, although I’m very comfortable with *
 #### Projects
 
 A big part of my professional projects have involved creating AI automation tools and chatbots alongside setting up and maintaining e-commerce pages. While these are my “bread-and-butter” projects, I see them as a consistent foundation for more specialized work later on.   
-A fundamental project for me has been the creation of a GIS-based app called **Focal Grid**. I was essentially put in charge of making the first version of a full-stack web app built to visualize Dutch public energy network data. This project introduced me to lots of core GIS concepts like **PostGIS**, **vector tiles**, and **GeoJSON**. Moreover, it sparked a genuine interest in GIS technology in me. This project took place during the end of last year, which was also the moment I discovered GSoC. I have gained permission from the client to share some details about the project which you can find [here](http://link.com).  
-Another notable personal project of mine was a basic **driver behavior simulator** written in C++. The main goal of the project was to recreate realistic acceleration and braking behavior in a multi-car single lane situation. The driving behavior is defined by the [**Intelligent Driver Model**](https://en.wikipedia.org/wiki/Intelligent_driver_model) and for the visualization I used **RayLib**. Feel free to check out the project [here](http://link.com).
+A fundamental project for me has been the creation of a GIS-based app called **Focal Grid**. I was essentially put in charge of making the first version of a full-stack web app built to visualize Dutch public energy network data. This project introduced me to lots of core GIS concepts like **PostGIS**, **vector tiles**, and **GeoJSON**. Moreover, it sparked a genuine interest in GIS technology in me. This project took place during the end of last year, which was also the moment I discovered GSoC. I have gained permission from the client to share some details about the project which you can find [here](https://replace-with-acutal-url.com).  
+Another notable personal project of mine was a basic **driver behavior simulator** written in C++. The main goal of the project was to recreate realistic acceleration and braking behavior in a multi-car single lane situation. The driving behavior is defined by the [**Intelligent Driver Model**](https://en.wikipedia.org/wiki/Intelligent_driver_model) and for the visualization I used **RayLib**. Feel free to check out the project [here](https://replace-with-acutal-url.com).
 
 ### Community involvement
 
@@ -108,7 +108,7 @@ While the aforementioned routing mechanism was meant as a functional proof of co
 1. **Inefficient request flow:** Closure aware routing currently invloves **fetching** closure data from the backend, **processing** it on the client, and **injecting** it into the routing request. Running this flow on every request introduces latency and unnecessary overhead.
 2. **Poor separation of concerns:** Having the client take charge fetching and normalizing closures means that every application using `closures.osm.ch` will need to reimplement its own version of closure-aware routing.  
 3. **API limits:** The current implementation limits routing queries to [50 points](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/frontend/app/closure-aware-routing/page.tsx#L149). This limits usability to small `bbox` areas whith few closure coordinates.  
-4. **Routing accuracy:** The `exclude_location` argument maps geometries to their closest graph edge in Valhalla during runtime. Ideally closures will get mapped directly to their corresponding edge IDs **before** the routing request happens.
+4. **Routing accuracy:** The `exclude_location` parameter maps geometries to their closest graph edge in Valhalla during runtime. Ideally closures will get mapped directly to their corresponding edge IDs **before** the routing request happens.
 
 ### Solution
 
@@ -153,7 +153,7 @@ Having originally proposed the addition of helper functions in Valhalla’s core
 
 #### Internal pipeline
 
-`closure-sync`'s internal flow can be summarized by the following the steps:
+`closure-sync`'s core loop can be summarized by the following the steps:
 ```mermaid
 flowchart LR
     B[Fetch & diff closure data]
@@ -163,11 +163,9 @@ flowchart LR
 ```
 ##### Fetch & diff extrenal closure data
 
-* HTTP poll
-* Extract graph `bbox` from tile directory
-* User configured interval
-* Voletile community data merits a 5 minute minimum interval
-* Returns **Delta Object**
+Before requesting any data from `closures.osm.ch` the service finds out what area the core graph covers by extracting the `bbox` from the Valhalla tile directory (example: `/data/valhalla_tiles/'2/756/728.gph`). Thereafter, `closure-sync` will poll `closure.osm.ch` on a user-configured time interval via HTTP by hitting its `GET /api/v1/closures` endpoint. On a succesful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closure.osm.ch` will be extended to accept a `updated_after=timestamp` query parameter to reduce network overhead. Nevetheless, `closure-sync` will require fallback diffing capabilities. 
+
+At the end of this step a **delta object** will be created containing the relevant closures and their metadata.
 
 ##### Parse traffic geometry
 
