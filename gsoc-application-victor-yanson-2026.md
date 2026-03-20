@@ -83,7 +83,7 @@ Lastly, I’m honestly not quite sure yet what vacation plans will arise come su
 
 ### High-level summary
 
-`closure-sync` is a **containerized sidecar service** designed to bridge the gap between **real-time road closures** on `closures.osm.ch` and **dynamic routing engines**. While meant for **engine-agnostic** extensibility, the initial implementation focuses on **Valhalla**. Here it provides a **pipeline** to translate **OpenLR/GeoJSON** closure data into live Valhalla traffic tiles. The service emphasizes "drop-in" usability, allowing map providers to synchronize live traffic states with **minimal configuration**.
+`closure-sync` is a **containerized sidecar service** designed to bridge the gap between **real-time road closures** on `closures.osm.ch` and **dynamic routing engines**. While meant for **engine-agnostic** extensibility, the initial implementation focuses on **Valhalla**. Here it provides a **pipeline** to translate **OpenLR** closure data into live Valhalla **traffic tiles**. The service emphasizes "drop-in" usability, allowing map providers to synchronize live road closures with **minimal configuration**.
 
 ### Context
 
@@ -99,22 +99,22 @@ The project idea proposed by Simon Poole boils down to making closures.osm.ch **
 
 #### Current routing approach
 
-As of now, `closures.osm.ch` handles closure-aware routing almost entirely **on the client**. The current mechanism fetches closure data from the backend to the Next app passing the fetched closures as `exclude_location` parameters in a routing request to a Valhalla server.
+As of now, `closures.osm.ch` handles closure-aware routing almost entirely **on the client**. The current mechanism fetches closure data from the backend to the Next app, passing the fetched closures as `exclude_location` parameters in routing requests to the Valhalla server.
 
 #### Areas of concern
 
 While the aforementioned routing mechanism was meant as a functional proof of concept, it presents several important limitations:
 
-1. **Inefficient request flow:** Routing currently requires multiple steps. This means fetching closure data from the backend, processing it on the client, and injecting it into the routing request. This increases latency and introduces unnecessary overhead.  
+1. **Inefficient request flow:** Closure aware routing currently invloves **fetching** closure data from the backend, **processing** it on the client, and **injecting** it into the routing request. Running this flow on every request introduces latency and unnecessary overhead.
 2. **Poor separation of concerns:** Having the client take charge fetching and normalizing closures means that every application using `closures.osm.ch` will need to reimplement its own version of closure-aware routing.  
-3. **API limits:** The current implementation limits routing queries to [50 points](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/frontend/app/closure-aware-routing/page.tsx#L149). This limits usability only to routing for small closures with few coordinates.  
-4. **Routing accuracy:** The `exclude_location` argument maps geometries to their closest graph edge in Valhalla during runtime. Ideally closures will get mapped directly to their corresponding edge IDs before the routing request.
+3. **API limits:** The current implementation limits routing queries to [50 points](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/frontend/app/closure-aware-routing/page.tsx#L149). This limits usability to small `bbox` areas whith few closure coordinates.  
+4. **Routing accuracy:** The `exclude_location` argument maps geometries to their closest graph edge in Valhalla during runtime. Ideally closures will get mapped directly to their corresponding edge IDs **before** the routing request happens.
 
 ### Solution
 
 #### Considerations
 
-When elaborating a possible solution, a handful of key considerations were kept in mind:
+During the elaboration of a possible technical solution, a handful of key considerations were kept in mind:
 
 1. **Ease of use:** Having a “plug and play” setup for any combination of supported routing engines and host systems with minimal to no configuration.  
 2. **Non-blocking:** Protecting the engine’s hot path from obstructions, even if the `closure-sync` service malfunctions.  
@@ -124,7 +124,7 @@ When elaborating a possible solution, a handful of key considerations were kept 
 
 The project adopts a **sidecar deployment pattern** to fulfill the core requirements of ease of integration. In this model `closure-sync` runs as a lightweight and **independent container** alongside the primary routing engine within the **same host environment**. By decoupling the synchronization logic from the routing core the architecture ensures a **non-blocking app lifecycle.** 
 
-The service functions by asynchronously ingesting data from `closures.osm.ch` and translating it into a native closure overlay format compatible with the routing engine's internal traffic APIs. 
+The service functions by asynchronously ingesting data from `closures.osm.ch` and translating it into a **native closure overlay format** compatible with the routing engine's internal traffic APIs. 
 
 ```mermaid  
 graph TD  
@@ -149,7 +149,7 @@ The choice for Valhalla’s initial integration is thanks to its **widespread ad
 
 ##### Approach
 
-Having originally proposed the addition of helper functions in Valhalla’s core C++ logic, I was gently guided to the [Live Traffic API](https://valhalla.github.io/valhalla/mjolnir/historical_traffic/) by the [maintainers](https://github.com/valhalla/valhalla/discussions/5944). This steered the technical direction toward a **data-driven integration** rather than a structural one. By pivoting to Valhalla's native support for binary traffic tiles (.tar), `closure-sync` can influence routing costs at runtime without modifying the engine's source code.
+Having originally proposed the addition of helper functions in Valhalla’s core C++ logic, I was gently guided to the [Live Traffic API](https://valhalla.github.io/valhalla/mjolnir/historical_traffic/) by the [maintainers](https://github.com/valhalla/valhalla/discussions/5944). This steered the technical direction toward a **data-driven integration** rather than a structural one. By pivoting to Valhalla's native support for binary traffic tiles (.tar) `closure-sync` can influence routing costs at runtime without modifying the engine's source code.
 
 #### Internal pipeline
 
@@ -164,6 +164,7 @@ flowchart LR
 ##### Fetch & diff extrenal closure data
 
 * HTTP poll
+* Extract graph `bbox` from tile directory
 * User configured interval
 * Voletile community data merits a 5 minute minimum interval
 * Returns **Delta Object**
