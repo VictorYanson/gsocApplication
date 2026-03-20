@@ -179,9 +179,11 @@ Furthermore, while it is true the Valhalla already has an internal [OpenLR decod
 
 ##### Resolve to graph IDs
 
-At this point, we hit a fork in the road where two viable approaches can possibly be used. Firstly, `pyvalhalla` already features a [`trace_attributes` method](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#trace-attributes-action) that takes a **GPS trace** or a set of **latitude/longitude positions** and returns the **attributes** of the graph edges along the trace including their `edge.id`. This call uses `Meili` to map match the coordinates to the nearest valid graph edges introducing some **probabilistic** properties to the resolution, leading to an expected accuracy of [around 90%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028).
+At this point, we hit a fork in the road where two viable approaches can possibly be used. Firstly, `pyvalhalla` already features a [`trace_attributes` method](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#trace-attributes-action) that takes a **GPS trace** or a set of **latitude/longitude positions** and returns the **attributes** of the graph edges along the trace including their `edge.id`. This call uses `Meili` to map match the coordinates to the nearest valid graph edges introducing some **probabilistic** properties to the resolution, leading to an expected accuracy of [around 90%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028). 
 
-Alternativly, you can treat each **union of two Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectivly increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a valid contiguous road section.
+> *This is notably the same accuracy problem the current `closures.osm.ch`solution suffers from*
+
+Alternativly, you can treat each **union of two Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectivly increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a **valid contiguous road section**.
 
 While the first option works to setup the **initial functionallity** and can increase **stability** by serving as a **fallback resolver**, the second option should ideally adopted as the **main approach**. 
 
@@ -199,13 +201,16 @@ While the first option works to setup the **initial functionallity** and can inc
 
 ### Continuation
 
+* To touch upon issues that might fall out of GSoC project scope.
+
 #### General
 
 - [Parallellisation](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029)
+- Multi-router Docker setup
 
-#### Graphhopper
+#### Other server-based routing engines
 
-…
+- Graphhopper
 
 #### Mobile applications
 
