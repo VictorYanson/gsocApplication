@@ -2,7 +2,7 @@
 
 # GSoC 2026 — Victor Yanson
 
-This document is meant as an application for Google’s Summer of Code 2026. It encompasses the applicants personal information and experience as well as a detailed project proposal. The project stems from a mentor project idea put forth by Simon Poole and can thus be found on the official OSM [GSoC 2026 project idea page](https://wiki.openstreetmap.org/wiki/Google_Summer_of_Code/2026/Project_ideas#Routing) under the ‘Routing’ category.
+This document forms part of an application for Google’s Summer of Code 2026. It encompasses the applicants personal information and experience as well as a detailed project proposal. The project stems from a mentor project idea put forth by Simon Poole and can thus be found on the official OSM [GSoC 2026 project idea page](https://wiki.openstreetmap.org/wiki/Google_Summer_of_Code/2026/Project_ideas#Routing) under the ‘Routing’ category.
 
 ## General information
 
@@ -186,21 +186,27 @@ Furthermore, while it is true the Valhalla already has an internal [OpenLR decod
 
 At this point, we hit a fork in the road where two viable approaches can possibly be used. Firstly, `pyvalhalla` already features a [`trace_attributes` method](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#trace-attributes-action) that takes a **GPS trace** or a set of **latitude/longitude positions** and returns the **attributes** of the graph edges along the trace including their `edge.id`. This call uses `meili` to map match the coordinates to the nearest valid graph edges introducing some **probabilistic** properties to the resolution, leading to an expected accuracy of [around 90%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028). This approach is reminiscent of the previously mentioned accurcy concerns in `closures.osm.ch`.
 
-Alternativly, you can treat each **union of two Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectivly increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a **valid contiguous road section**.
+Alternativly, you can treat each **union of two succesive Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectivly increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a **valid contiguous road section**.
 
 While the first option works to setup the **initial functionallity** and can increase **stability** by serving as a **fallback resolver**, the second option should ideally adopted as the **main approach**. 
 
 ##### Build & replace traffic.tar
 
-* Memory struct creation
-* File IO (python std lib)
+<!-- * Traffic Tile Serialization
+* File IO (python std lib) write to common volume
 * Traffic Tiles `mmap`
-* Data synchronisation: `Baldr` tile cache system
+* Data synchronisation: `Baldr` tile cache system -->
+
+To create the initial live traffic skeleton binary we can call [`valhalla_build_extract` with the `--with-traffic` flag](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10829927) once at setup time. This will scaffold the tile structure with the corresponding headers and reserves zero bytes for the edges.
+
+Unfortunatly, there's [no clean `pyvalhalla` method](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10892020) to inject the closure structs into the .tar skeleton. This means that we'll need to meticulously have to recreate the [traffic speed struct](https://github.com/valhalla/valhalla/blob/3.5.0/valhalla/baldr/traffictile.h#L52-L64) ourself using `struct` from the **Python standard library**.
+
+To efficiently write the closures we firstly open a `mmap` for each traffic tile contained in the .tar binary. Then, we can write the structs to the correct location by calculating the [offset](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285). Finally, we flush and close the `mmap`. This repeats for every tile file in the .tar binary until completing the graph.
 
 #### Limitations & opportunities
-* OpenLR currently [not fully supported](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/backend/app/services/openlr_service.py#L138-L139) by `closures.osm.ch` —— I'd like to fix it
+* OpenLR currently [not fully supported](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/backend/app/services/openlr_service.py#L138-L139) by `closures.osm.ch` — I'd like to fix it
 * I'd like to make the `openlr.h` python binding
-* Interpreter version->Compiled version
+* Interpreter version -> Compiled version
 
 ### Continuation
 
@@ -208,8 +214,10 @@ While the first option works to setup the **initial functionallity** and can inc
 
 #### General
 
-- [Parallellisation](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029)
+- Performance improvement by [parallellisation](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029) considering [edge IDs are not static](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285) and entire closure remaps are likely common.
 - Multi-router Docker setup
+- Closure speed segment breakpoint support
+- traffic.tar race condition handling
 
 #### Other server-based routing engines
 
@@ -228,4 +236,8 @@ While the first option works to setup the **initial functionallity** and can inc
 
 ### AI use
 
-…
+- GitHub Repo of this proposal
+- Near-zero AI written content (all the bold text and formatting was by myself)
+- Throughout the whole process AI has helped me managed the confusion of being a FOSS newbie
+- I used AI to bounce off some ideas in areas where I'm less familiar
+  - Example: file IO for .tar files where I couldn't easily find any documentation/previous discussions on the topic **AND** project scheduling
