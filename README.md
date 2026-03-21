@@ -104,7 +104,7 @@ The project idea proposed by Simon Poole boils down to making closures.osm.ch **
 
 #### Current routing approach
 
-As of now, `closures.osm.ch` handles closure-aware routing almost entirely **on the client**. The current mechanism fetches closure data from the backend to the Next app, passing the fetched closures as `exclude_location` parameters in routing requests to the Valhalla server.
+As of now, `closures.osm.ch` handles closure-aware routing almost entirely [on the client](https://github.com/Archit1706/temporary-road-closures/blob/master/frontend/app/closure-aware-routing/page.tsx). The current mechanism fetches closure data from the backend to the Next app, passing the fetched closures as `exclude_locations` parameters in routing requests to the Valhalla server.
 
 #### Areas of concern
 
@@ -178,7 +178,7 @@ Despite returned closure objects from `closures.osm.ch` containing both **GeoJSO
 
 Furthermore, while it is true the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), however it unfortunatly doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
 
-> **Note:** during 
+**Note:** [Proof of concept testing](https://github.com/VictorYanson/gsoc-pyvalhalla-test/blob/main/notebooks/openlr-error.ipynb) suggests the current OpenLR implementation in the `closures.osm.ch` backend is not yet fully aligned with the standard. Upstream contributions to address this will be considered within the scope of the project.
 
 ##### Resolve to graph IDs
 
