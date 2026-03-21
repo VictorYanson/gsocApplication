@@ -172,15 +172,13 @@ Before requesting any data from `closures.osm.ch` the service finds out what are
 
 On a succesful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closures.osm.ch` will be extended to accept a `updated_after=timestamp` query parameter to reduce network overhead. Nevertheless, `closure-sync` will require fallback diffing capabilities warranting an interal option. 
 
-<!-- The result of this step is a **delta object** containing the relevant closures and their metadata. -->
-
 ##### Parse traffic geometry
 
 Despite returned closure objects from `closures.osm.ch` containing both **GeoJSON** and **OpenLR** for closure geometries, OpenLR is generally preferred for Valhalla [edge resolution](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824018) due to it's ineherent **map-agnosticism**.
 
 Furthermore, while it is true the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), however it unfortunatly doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
 
-<!-- This step finalizes by creating a **Location Reference Object**. -->
+> **Note:** during 
 
 ##### Resolve to graph IDs
 
@@ -192,21 +190,14 @@ While the first option works to setup the **initial functionallity** and can inc
 
 ##### Build & replace traffic.tar
 
-<!-- * Traffic Tile Serialization
-* File IO (python std lib) write to common volume
-* Traffic Tiles `mmap`
-* Data synchronisation: `Baldr` tile cache system -->
+To create the initial live traffic skeleton binary we can call [`valhalla_build_extract --with-traffic`](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10829927) once at setup time. This will scaffold the tile structure with the corresponding headers and reserves zero bytes for the edges.
 
-To create the initial live traffic skeleton binary we can call [`valhalla_build_extract` with the `--with-traffic` flag](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10829927) once at setup time. This will scaffold the tile structure with the corresponding headers and reserves zero bytes for the edges.
+Unfortunatly, there's [no clean `pyvalhalla` method](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10892020) to inject the closure structs into the .tar skeleton. This means that we'll need to meticulously recreate the [traffic speed struct](https://github.com/valhalla/valhalla/blob/3.5.0/valhalla/baldr/traffictile.h#L52-L64) ourself using `struct` from the **Python standard library**.
 
-Unfortunatly, there's [no clean `pyvalhalla` method](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10892020) to inject the closure structs into the .tar skeleton. This means that we'll need to meticulously have to recreate the [traffic speed struct](https://github.com/valhalla/valhalla/blob/3.5.0/valhalla/baldr/traffictile.h#L52-L64) ourself using `struct` from the **Python standard library**.
-
-To efficiently write the closures we firstly open a `mmap` for each traffic tile contained in the .tar binary. Then, we can write the structs to the correct location by calculating the [offset](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285). Finally, we flush and close the `mmap`. This repeats for every tile file in the .tar binary until completing the graph.
+To efficiently write the closures we firstly open a `mmap` for each traffic tile contained in the .tar binary. Then, we can write the structs in-place to the correct location by calculating the [offset](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285) and using the edge ID its index. Finally, we flush and close the `mmap`, repeating this for every tile file in the .tar binary until completing the graph.
 
 #### Limitations & opportunities
-* OpenLR currently [not fully supported](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/backend/app/services/openlr_service.py#L138-L139) by `closures.osm.ch` — I'd like to fix it
-* I'd like to make the `openlr.h` python binding
-* Interpreter version -> Compiled version
+* OpenLR currently [not fully supported](https://github.com/VictorYanson/gsoc-pyvalhalla-test/blob/main/notebooks/openlr-error.ipynb) by `closures.osm.ch` — I'd like to fix it
 
 ### Continuation
 
@@ -215,6 +206,7 @@ To efficiently write the closures we firstly open a `mmap` for each traffic tile
 #### General
 
 - Performance improvement by [parallellisation](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029) considering [edge IDs are not static](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285) and entire closure remaps are likely common.
+- Compiled version
 - Multi-router Docker setup
 - Closure speed segment breakpoint support
 - traffic.tar race condition handling

@@ -1,7 +1,7 @@
 :root {
   --light-text: white;
   --dark-text: #333333;
-  --link-text: rgb(0, 0, 206);
+  --link-text: rgb(206, 158, 0);
 }
 
 html { background-color: var(--light-text); }
@@ -21,8 +21,8 @@ code { background-color: #0000000d; }
 a code{ color: var(--link-text) !important; }
 
 h1, h2, h3, h4, h5 {
-    line-height: 1.2;
-    margin-bottom: 0.6em;
+  line-height: 1.2;
+  margin-bottom: 0.6em;
 }
 
 h1 { font-size: 2em; }
@@ -30,3 +30,7 @@ h2 { font-size: 1.75em; }
 h3 { font-size: 1.5em; }
 h4 { font-size: 1.25em; }
 h5, h6 { font-size: 1em; }
+
+table th, table td {
+  border: 1px solid #d1d5db !important;
+}
