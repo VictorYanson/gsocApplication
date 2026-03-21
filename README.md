@@ -113,7 +113,7 @@ While the aforementioned routing mechanism was meant as a functional proof of co
 1. **Inefficient request flow:** Closure aware routing currently invloves **fetching** closure data from the backend, **processing** it on the client, and **injecting** it into the routing request. Running this flow on every request introduces latency and unnecessary overhead.
 2. **Poor separation of concerns:** Having the client take charge fetching and normalizing closures means that every application using `closures.osm.ch` will need to reimplement its own version of closure-aware routing.  
 3. **API limits:** The current implementation limits routing queries to [50 points](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/frontend/app/closure-aware-routing/page.tsx#L149). This limits usability to small **bbox** areas whith few closure coordinates.  
-4. **Routing accuracy:** The `exclude_location` parameter maps geometries to their closest graph edge in Valhalla during runtime. Ideally closures will get mapped directly to their corresponding edge IDs **before** the routing request happens.
+4. **Routing accuracy:** The `exclude_locations` parameter maps geometries to their closest graph edge in Valhalla during runtime. Ideally closures will get mapped directly to their corresponding edge IDs **before** the routing request happens.
 
 ### Solution
 
@@ -168,15 +168,15 @@ flowchart LR
 ```
 ##### Fetch & diff extrenal closure data
 
-Before requesting any data from `closures.osm.ch` the service finds out what area the core graph covers by extracting the **bbox** from the **Valhalla tile directory** (example: `/data/valhalla_tiles/'2/756/728.gph'`). Thereafter, `closure-sync` will poll `closures.osm.ch` on a user-configured **time interval** via HTTP by hitting its `GET /api/v1/closures` endpoint.
+Before requesting any data from `closures.osm.ch`, the service finds out what area the core graph covers by extracting the **bbox** from the **Valhalla tile directory** (example: `/data/valhalla_tiles/'2/756/728.gph'`). Thereafter, `closure-sync` will poll `closures.osm.ch` on a user-configured **time interval** via HTTP by hitting its `GET /api/v1/closures` endpoint.
 
-On a succesful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closures.osm.ch` will be extended to accept a `updated_after=timestamp` query parameter to reduce network overhead. Nevertheless, `closure-sync` will require fallback diffing capabilities warranting an interal option. 
+On a succesful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closures.osm.ch` will be extended to accept a `updated_after=timestamp` query parameter to reduce network overhead. Nevertheless, `closure-sync` will require fallback diffing capabilities warranting an internal option. 
 
 ##### Parse traffic geometry
 
 Despite returned closure objects from `closures.osm.ch` containing both **GeoJSON** and **OpenLR** for closure geometries, OpenLR is generally preferred for Valhalla [edge resolution](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824018) due to it's ineherent **map-agnosticism**.
 
-Furthermore, while it is true the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), however it unfortunatly doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
+Furthermore, while it is true the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), it unfortunately doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
 
 **Note:** [Proof of concept testing](https://github.com/VictorYanson/gsoc-pyvalhalla-test/blob/main/notebooks/openlr-error.ipynb) suggests the current OpenLR implementation in the `closures.osm.ch` backend is not yet fully aligned with the standard. Upstream contributions to address this will be considered within the scope of the project.
 
@@ -186,34 +186,40 @@ At this point, we hit a fork in the road where two viable approaches can possibl
 
 Alternativly, you can treat each **union of two succesive Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectivly increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a **valid contiguous road section**.
 
-While the first option works to setup the **initial functionallity** and can increase **stability** by serving as a **fallback resolver**, the second option should ideally adopted as the **main approach**. 
+While the first option works to setup the **initial functionallity** and can increase **stability** by serving as a **fallback resolver**, the second option should ideally be adopted as the **main approach**. 
 
 ##### Build & replace traffic.tar
 
 To create the initial live traffic skeleton binary we can call [`valhalla_build_extract --with-traffic`](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10829927) once at setup time. This will scaffold the tile structure with the corresponding headers and reserves zero bytes for the edges.
 
-Unfortunatly, there's [no clean `pyvalhalla` method](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10892020) to inject the closure structs into the .tar skeleton. This means that we'll need to meticulously recreate the [traffic speed struct](https://github.com/valhalla/valhalla/blob/3.5.0/valhalla/baldr/traffictile.h#L52-L64) ourself using `struct` from the **Python standard library**.
+Unfortunately, there's [no clean `pyvalhalla` method](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10892020) to inject the closure structs into the .tar skeleton. This means that we'll need to meticulously recreate the [traffic speed struct](https://github.com/valhalla/valhalla/blob/3.5.0/valhalla/baldr/traffictile.h#L52-L64) ourself using `struct` from the **Python standard library**.
 
-To efficiently write the closures we firstly open a `mmap` for each traffic tile contained in the .tar binary. Then, we can write the structs in-place to the correct location by calculating the [offset](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285) and using the edge ID its index. Finally, we flush and close the `mmap`, repeating this for every tile file in the .tar binary until completing the graph.
+To efficiently write the closures we firstly open a `mmap` for each traffic tile contained in the .tar binary. Then, we can write the structs in-place to the correct location by calculating the [offset](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285) and using the edge ID as its index. Finally, we flush and close the `mmap`, repeating this for every tile file in the .tar binary until completing the graph.
 
-#### Limitations & opportunities
-* OpenLR currently [not fully supported](https://github.com/VictorYanson/gsoc-pyvalhalla-test/blob/main/notebooks/openlr-error.ipynb) by `closures.osm.ch` — I'd like to fix it
+### Schedule for project completion
+
+…
 
 ### Continuation
 
-* To touch upon issues that might fall out of GSoC project scope.
+Seeing as GSoC will solely follow the **initial phase** of `closure-sync`, here are some **subsequent technical challenges** the project can take on.
 
-#### General
+#### Performance improvement
 
-- Performance improvement by [parallellisation](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029) considering [edge IDs are not static](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285) and entire closure remaps are likely common.
-- Compiled version
-- Multi-router Docker setup
+<!-- 
 - Closure speed segment breakpoint support
-- traffic.tar race condition handling
+- traffic.tar race condition handling 
+-->
+
+Once the service takes shape and all basic functionallity is present, major **performance bottlenecks** can gradually be identified. As the amount of handled closures increases, we can begin looking where **parallellisation** is [most benificial](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029:~:text=if%20you%20parallelize%20the%20processing%20it%20should%20be%20fast%20to%20compute%20all%20the%20mappings%20of%20openlr%20to%20graph%20ids.%20and%20by%20fast%20i%20mean%20like%20less%20than%20an%20hour%20probably%20significantly%20less%20if%20you%20have%20a%20decent%20number%20of%20cores).
+
+On top of that, to increase **ease of use factor** we can consider a (partial) rewrite of the service into a **compiled language** like **Go**.
 
 #### Other server-based routing engines
 
-- Graphhopper
+- Multi-router Docker setup
+- **OSRM** uses a very similar [CSV file based architecture](https://github.com/Project-OSRM/osrm-backend/wiki/Traffic) for traffic. It can equally be used for [closure handling](https://github.com/Project-OSRM/osrm-backend/issues/3414)
+- For **graphhopper**  [custom weighting](https://github.com/graphhopper/graphhopper/blob/master/docs/core/weighting.md) will need to be used.
 
 #### Mobile applications
 
@@ -221,10 +227,7 @@ To efficiently write the closures we firstly open a `mmap` for each traffic tile
 - Adjusted architecture   
   - single host env per routing app→shared public traffic feed  
   - Better suited for closures.osm.ch
-
-### Schedule for project completion
-
-…
+    - refactor logic from `closure-sync`
 
 ### AI use
 
