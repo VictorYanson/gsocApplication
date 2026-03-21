@@ -4,6 +4,22 @@
 
 This document forms part of an application for Google’s Summer of Code 2026. It encompasses the applicants personal information and experience as well as a detailed project proposal. The project stems from a mentor project idea put forth by Simon Poole and can thus be found on the official OSM [GSoC 2026 project idea page](https://wiki.openstreetmap.org/wiki/Google_Summer_of_Code/2026/Project_ideas#Routing) under the ‘Routing’ category.
 
+- [General information](#general-information)
+  - [Personal information](#personal-information)
+  - [Bio](#bio)
+  - [Relevant experience](#relevant-experience)
+  - [Community involvement](#community-involvement)
+  - [Availability](#availability)
+- [Project proposal](#project-proposal)
+  - [High-level summary](#high-level-summary)
+  - [Context](#context)
+  - [Problem](#problem)
+  - [Solution](#solution)
+  - [Schedule for project completion](#schedule-for-project-completion)
+  - [Continuation](#continuation)
+  - [AI use](#ai-use)
+
+
 ## General information
 
 ### Personal information
@@ -110,9 +126,9 @@ As of now, `closures.osm.ch` handles closure-aware routing almost entirely [on t
 
 While the aforementioned routing mechanism was meant as a functional proof of concept, it presents several important limitations:
 
-1. **Inefficient request flow:** Closure aware routing currently invloves **fetching** closure data from the backend, **processing** it on the client, and **injecting** it into the routing request. Running this flow on every request introduces latency and unnecessary overhead.
+1. **Inefficient request flow:** Closure aware routing currently involves **fetching** closure data from the backend, **processing** it on the client, and **injecting** it into the routing request. Running this flow on every request introduces latency and unnecessary overhead.
 2. **Poor separation of concerns:** Having the client take charge fetching and normalizing closures means that every application using `closures.osm.ch` will need to reimplement its own version of closure-aware routing.  
-3. **API limits:** The current implementation limits routing queries to [50 points](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/frontend/app/closure-aware-routing/page.tsx#L149). This limits usability to small **bbox** areas whith few closure coordinates.  
+3. **API limits:** The current implementation limits routing queries to [50 points](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/frontend/app/closure-aware-routing/page.tsx#L149). This limits usability to small **bbox** areas with few closure coordinates.  
 4. **Routing accuracy:** The `exclude_locations` parameter maps geometries to their closest graph edge in Valhalla during runtime. Ideally closures will get mapped directly to their corresponding edge IDs **before** the routing request happens.
 
 ### Solution
@@ -176,9 +192,9 @@ On a succesful response `closure-sync` will parse the JSON response and diff for
 
 Despite returned closure objects from `closures.osm.ch` containing both **GeoJSON** and **OpenLR** for closure geometries, OpenLR is generally preferred for Valhalla [edge resolution](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824018) due to it's ineherent **map-agnosticism**.
 
-Furthermore, while it is true the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), it unfortunately doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
+Furthermore, while it is true that the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), it unfortunately doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
 
-**Note:** [Proof of concept testing](https://github.com/VictorYanson/gsoc-pyvalhalla-test/blob/main/notebooks/openlr-error.ipynb) suggests the current OpenLR implementation in the `closures.osm.ch` backend is not yet fully aligned with the standard. Upstream contributions to address this will be considered within the scope of the project.
+**Note:** [PoC testing](https://github.com/VictorYanson/gsoc-pyvalhalla-test/blob/main/notebooks/openlr-error.ipynb) suggests the current OpenLR implementation in the `closures.osm.ch` backend is not yet fully aligned with the standard. Upstream contributions to address this will be considered within the scope of the project.
 
 ##### Resolve to graph IDs
 
@@ -186,7 +202,7 @@ At this point, we hit a fork in the road where two viable approaches can possibl
 
 Alternativly, you can treat each **union of two succesive Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectivly increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a **valid contiguous road section**.
 
-While the first option works to setup the **initial functionallity** and can increase **stability** by serving as a **fallback resolver**, the second option should ideally be adopted as the **main approach**. 
+While the first option works to setup the **initial functionality** and can increase **stability** by serving as a **fallback resolver**, the second option should ideally be adopted as the **main approach**. 
 
 ##### Build & replace traffic.tar
 
@@ -198,7 +214,8 @@ To efficiently write the closures we firstly open a `mmap` for each traffic tile
 
 ### Schedule for project completion
 
-…
+- **Week 1:** setup communication, setup environment, elaborate project plan
+- **Week 2:** 
 
 ### Continuation
 
@@ -211,9 +228,9 @@ Seeing as GSoC will solely follow the **initial phase** of `closure-sync`, here 
 - traffic.tar race condition handling 
 -->
 
-Once the service takes shape and all basic functionallity is present, major **performance bottlenecks** can gradually be identified. As the amount of handled closures increases, we can begin looking where **parallellisation** is [most benificial](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029:~:text=if%20you%20parallelize%20the%20processing%20it%20should%20be%20fast%20to%20compute%20all%20the%20mappings%20of%20openlr%20to%20graph%20ids.%20and%20by%20fast%20i%20mean%20like%20less%20than%20an%20hour%20probably%20significantly%20less%20if%20you%20have%20a%20decent%20number%20of%20cores).
+Once the service takes shape and all basic functionallity is present, major **performance bottlenecks** can gradually be identified. As the amount of handled closures increases, we can begin looking where **parallelisation** is [most beneficial](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029:~:text=if%20you%20parallelize%20the%20processing%20it%20should%20be%20fast%20to%20compute%20all%20the%20mappings%20of%20openlr%20to%20graph%20ids.%20and%20by%20fast%20i%20mean%20like%20less%20than%20an%20hour%20probably%20significantly%20less%20if%20you%20have%20a%20decent%20number%20of%20cores).
 
-On top of that, to increase **ease of use factor** we can consider a (partial) rewrite of the service into a **compiled language** like **Go**.
+On top of that, to increase the **"ease of use factor"** we can consider a (partial) rewrite of the service into a **compiled language** like **Go**.
 
 #### Other server-based routing engines
 
@@ -223,11 +240,12 @@ On top of that, to increase **ease of use factor** we can consider a (partial) r
 
 #### Mobile applications
 
-- Comaps and OSMand  
-- Adjusted architecture   
-  - single host env per routing app→shared public traffic feed  
-  - Better suited for closures.osm.ch
-    - refactor logic from `closure-sync`
+- Apps like **Comaps** and **OSMand** are much more challenging
+- They are made to be offline first and thus don't have many option for dynamic runtime APIs
+- [They don't feature traffic integration through external sources](https://codeberg.org/comaps/comaps/issues/2460#:~:text=Road%20access%20is%20set%20at%20map%20generation%20time%2C%20so%20not%20easily%20amended%20AFAIK)
+- Server-style architecture won't work
+- If an adoption for `closure-sync` were to be made, the source-code of the apps would first need te be extended
+- Not impossible but a whole new kind of challenge
 
 ### AI use
 
