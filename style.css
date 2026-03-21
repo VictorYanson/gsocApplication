@@ -1,0 +1,44 @@
+:root {
+  --light-text: white;
+  --dark-text: #333333;
+  --link-text: rgb(0, 0, 206);
+}
+
+html {
+    background-color: var(--light-text);
+}
+
+* {
+    color: var(--dark-text);
+}
+
+strong {
+    font-weight: 500;
+}
+
+a {
+    color: var(--link-text);
+}
+
+.mermaid p{
+    color: var(--light-text) !important;
+}
+
+code {
+    background-color: #0000000d;
+}
+
+a code{
+    color: var(--link-text) !important;
+}
+
+h1, h2, h3, h4, h5 {
+    line-height: 1.2;
+    margin-bottom: 0.6em;
+}
+
+h1 { font-size: 2em; }
+h2 { font-size: 1.75em; }
+h3 { font-size: 1.5em; }
+h4 { font-size: 1.25em; }
+h5, h6 { font-size: 1em; }

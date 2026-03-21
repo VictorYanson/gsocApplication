@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="style.css">
+
 # GSoC 2026 — Victor Yanson
 
 This document is meant as an application for Google’s Summer of Code 2026. It encompasses the applicants personal information and experience as well as a detailed project proposal. The project stems from a mentor project idea put forth by Simon Poole and can thus be found on the official OSM [GSoC 2026 project idea page](https://wiki.openstreetmap.org/wiki/Google_Summer_of_Code/2026/Project_ideas#Routing) under the ‘Routing’ category.
@@ -6,9 +8,8 @@ This document is meant as an application for Google’s Summer of Code 2026. It 
 
 ### Personal information
 
-| Field | Detail |
+| Full name | Victor Alexander Marek Yanson |
 | :--- | :--- |
-| **Full name** | Victor Yanson |
 | **Occupation** | Freelance Developer |
 | **OSM account** | [VictorYanson](https://www.openstreetmap.org/user/VictorYanson) |
 | **GitHub account** | [VictorYanson](https://github.com/VictorYanson) |
@@ -31,8 +32,10 @@ My day-to-day language is **TypeScript**, although I’m very comfortable with *
 
 #### Projects
 
-A big part of my professional projects have involved creating AI automation tools and chatbots alongside setting up and maintaining e-commerce pages. While these are my “bread-and-butter” projects, I see them as a consistent foundation for more specialized work later on.   
-A fundamental project for me has been the creation of a GIS-based app called **Focal Grid**. I was essentially put in charge of making the first version of a full-stack web app built to visualize Dutch public energy network data. This project introduced me to lots of core GIS concepts like **PostGIS**, **vector tiles**, and **GeoJSON**. Moreover, it sparked a genuine interest in GIS technology in me. This project took place during the end of last year, which was also the moment I discovered GSoC. I have gained permission from the client to share some details about the project which you can find [here](https://replace-with-acutal-url.com).  
+A big part of my professional projects have involved creating AI automation tools and chatbots alongside setting up and maintaining e-commerce pages. While these are my “bread-and-butter” projects, I see them as a consistent foundation for more specialized work later on.
+
+A fundamental project for me has been the creation of a GIS-based app called **Focal Grid**. I was essentially put in charge of making the first version of a full-stack web app built to visualize Dutch public energy network data. This project introduced me to lots of core GIS concepts like **PostGIS**, **vector tiles**, and **GeoJSON**. Moreover, it sparked a genuine interest in GIS technology in me. This project took place during the end of last year, which was also the moment I discovered GSoC. I have gained permission from the client to share some details about the project which you can find [here](https://replace-with-acutal-url.com).
+
 Another notable personal project of mine was a basic **driver behavior simulator** written in C++. The main goal of the project was to recreate realistic acceleration and braking behavior in a multi-car single lane situation. The driving behavior is defined by the [**Intelligent Driver Model**](https://en.wikipedia.org/wiki/Intelligent_driver_model) and for the visualization I used **RayLib**. Feel free to check out the project [here](https://replace-with-acutal-url.com).
 
 ### Community involvement
@@ -76,7 +79,9 @@ That being said, I would describe my entry into the community as a pleasant lear
 ### Availability
 
 Without getting into too much detail, my personal situation allows me to focus this summer fully on professional and personal development ahead of my enrollment in my Master’s course. This means that I’m assured to have **at least 30 hours a week** available during the summer months to commit to GSoC. This would be in line with the **350 hour time scope** proposed by Simon. The only other summer activity of note is my self-study of math-related preparatory university materials.  
-Additionally, I’m currently in the midst of a client project. However, the project is foreseen to finalize mid-April, after which I don’t have any other major projects lined up.  
+
+Additionally, I’m currently in the midst of a client project. However, the project is foreseen to finalize mid-April, after which I don’t have any other major projects lined up. 
+
 Lastly, I’m honestly not quite sure yet what vacation plans will arise come summertime. Nevertheless, if any trips come up, I can assure they won’t be more than a **weekend getaway**. Of course, I will be sure to keep my mentor up to date might anything come up.
 
 ## Project proposal
@@ -163,9 +168,9 @@ flowchart LR
 ```
 ##### Fetch & diff extrenal closure data
 
-Before requesting any data from `closures.osm.ch` the service finds out what area the core graph covers by extracting the **bbox** from the **Valhalla tile directory** (example: `/data/valhalla_tiles/'2/756/728.gph'`). Thereafter, `closure-sync` will poll `closure.osm.ch` on a user-configured **time interval** via HTTP by hitting its `GET /api/v1/closures` endpoint.
+Before requesting any data from `closures.osm.ch` the service finds out what area the core graph covers by extracting the **bbox** from the **Valhalla tile directory** (example: `/data/valhalla_tiles/'2/756/728.gph'`). Thereafter, `closure-sync` will poll `closures.osm.ch` on a user-configured **time interval** via HTTP by hitting its `GET /api/v1/closures` endpoint.
 
-On a succesful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closure.osm.ch` will be extended to accept a `updated_after=timestamp` query parameter to reduce network overhead. Nevertheless, `closure-sync` will require fallback diffing capabilities warranting an interal option. 
+On a succesful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closures.osm.ch` will be extended to accept a `updated_after=timestamp` query parameter to reduce network overhead. Nevertheless, `closure-sync` will require fallback diffing capabilities warranting an interal option. 
 
 <!-- The result of this step is a **delta object** containing the relevant closures and their metadata. -->
 
@@ -173,15 +178,13 @@ On a succesful response `closure-sync` will parse the JSON response and diff for
 
 Despite returned closure objects from `closures.osm.ch` containing both **GeoJSON** and **OpenLR** for closure geometries, OpenLR is generally preferred for Valhalla [edge resolution](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824018) due to it's ineherent **map-agnosticism**.
 
-Furthermore, while it is true the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), it unfortunatly doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
+Furthermore, while it is true the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), however it unfortunatly doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
 
 <!-- This step finalizes by creating a **Location Reference Object**. -->
 
 ##### Resolve to graph IDs
 
-At this point, we hit a fork in the road where two viable approaches can possibly be used. Firstly, `pyvalhalla` already features a [`trace_attributes` method](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#trace-attributes-action) that takes a **GPS trace** or a set of **latitude/longitude positions** and returns the **attributes** of the graph edges along the trace including their `edge.id`. This call uses `Meili` to map match the coordinates to the nearest valid graph edges introducing some **probabilistic** properties to the resolution, leading to an expected accuracy of [around 90%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028). 
-
-> *This is notably the same accuracy problem the current `closures.osm.ch`solution suffers from*
+At this point, we hit a fork in the road where two viable approaches can possibly be used. Firstly, `pyvalhalla` already features a [`trace_attributes` method](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#trace-attributes-action) that takes a **GPS trace** or a set of **latitude/longitude positions** and returns the **attributes** of the graph edges along the trace including their `edge.id`. This call uses `meili` to map match the coordinates to the nearest valid graph edges introducing some **probabilistic** properties to the resolution, leading to an expected accuracy of [around 90%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028). This approach is reminiscent of the previously mentioned accurcy concerns in `closures.osm.ch`.
 
 Alternativly, you can treat each **union of two Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectivly increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a **valid contiguous road section**.
 
