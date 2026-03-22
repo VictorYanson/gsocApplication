@@ -218,33 +218,35 @@ To efficiently write the closures we firstly open an `mmap` for each traffic til
   - Setup communications & development environment
   - Validation research
   - Baseline benchmarking
-- **Week 3-4:**
+- **Week 3-4:** *— **Milestone:** A working pipeline from closures API → edge IDs (no traffic integration yet)*
   - `closure.osm.ch` polling & diffing mechanism
   - Containerized sidecar setup
   - Basic edge resolution with GeoJSON & `trace_attributes`
 - **Week 4-5:**
   - OpenLR upstream contribution
   - Setup geometry decoding
-- **Week 6-7:**
+- **Week 6-7:** *— **Milestone:** Reliable and well-evaluated edge resolution pipeline*
   - Edge ID tracing with routing requests approach
   - Benchmarking accuracies for both approaches
   - Fallback mechanism setup
 - **Week 8-9:**
   - Implement struct packing
   - Offset handling
-  - Handling tile indexing logic
-- **Week 10-11:**
+  - Handle tile indexing logic
+- **Week 10-11:** *— **Milestone:** Proven ability to influence Valhalla routing through traffic tile manipulation*
   - Opening and managing memory-mapped files
   - Ensuring safe writes
   - Race condition handling
-- **Week 12-13:**
-  - Orchastration main service loop
-  - Handling failures without breaking routing engine
+- **Week 12-13:** *— **Milestone:** Complete working `closure-sync` service operating as a sidecar*
+  - Orchestrate main service loop
+  - Handle failures without breaking routing engine
   - Logging + observability
-- **Week 14-15:**
+- **Week 14-15:** *— **Milestone:** Production-ready prototype with documentation and reproducible demo*
   - Writing extensive documentation
   - Finishing full test suite
   - Upstream `updated_after` query param contribution
+
+**Note:** The project entails continuous test integration across all phases, and is therefore not listed explicitly in the schedule.
 
 ### Continuation
 
