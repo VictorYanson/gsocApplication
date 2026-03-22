@@ -1,5 +1,3 @@
-- Submission by Victor Yanson
-- Project: bridge between closures.osm.ch and dynamic routing engines
-- Initial idea by Simon Poole
-- 350 hour project
-- For technical technical overview read: 'High-level summary', 'Architecture', and 'Internal pipeline'
+Closure-sync is a containerized sidecar service designed to bridge the gap between real-time road closures on closures.osm.ch (GSoC 2025) and dynamic routing engines. While meant for engine-agnostic extensibility, the initial implementation focuses on Valhalla. Here it provides a pipeline to translate OpenLR closure data into live Valhalla traffic tiles. The service emphasizes "drop-in" usability, allowing map providers to synchronize live road closures with minimal configuration.
+
+Key deliverables will include a fully functional closure-sync service, Valhalla integration via live traffic tiles, comprehensive documentation, and a reproducible deployment setup.
