@@ -218,7 +218,7 @@ To efficiently write the closures we firstly open an `mmap` for each traffic til
   - Setup communications & development environment
   - Validation research
   - Baseline benchmarking
-- **Week 3-4:** *— **Milestone:** A working pipeline from closures API → edge IDs (no traffic integration yet)*
+- **Week 3-4:** *— **Milestone:** A working pipeline from closures API to edge IDs (no traffic integration yet)*
   - `closure.osm.ch` polling & diffing mechanism
   - Containerized sidecar setup
   - Basic edge resolution with GeoJSON & `trace_attributes`
@@ -265,9 +265,11 @@ On top of that, to increase the **"ease of use factor"** we can consider a (part
 
 #### Other server-based routing engines
 
-- Multi-router Docker setup
-- **OSRM** uses a very similar [CSV file based architecture](https://github.com/Project-OSRM/osrm-backend/wiki/Traffic) for traffic. It can equally be used for [closure handling](https://github.com/Project-OSRM/osrm-backend/issues/3414)
-- For **graphhopper**  [custom weighting](https://github.com/graphhopper/graphhopper/blob/master/docs/core/weighting.md) will need to be used.
+With **routing engine agnosticism** being one of `closure-sync`'s biggest points of interest, the logical continuation after Valhalla would be to adapt **more OSM routing engines**. Preliminary research indicates that the majority of the internal pipeline can be refactored for **OSRM**.
+
+**OSRM** uses a very similar system to Valhalla when it comes to dynamic traffic injestion. The only major difference being the **data format** in which [closures would be represented](https://github.com/Project-OSRM/osrm-backend/issues/3414#issuecomment-265624648). Namely, where Valhalla uses a .tar binary, OSRM uses a [**CSV file**](https://github.com/Project-OSRM/osrm-backend/wiki/Traffic).
+
+**Graphhopper** is where things start to get **tricky**. Their weighting API sadly **doesn't expose IDs** cleanly and the IDs themselves are [not stable](https://github.com/graphhopper/graphhopper/issues/917#:~:text=%2D9223372036854775806%20is%20fake,id%20is%20created%3F) during runtime, making identity based edge manipulation very difficult. There have been efforts to associate OSM [way](https://github.com/graphhopper/graphhopper/pull/2701) and [node](https://github.com/graphhopper/graphhopper/issues/917) IDs to the internal graph, but there's no existing **external data injection system** like in the other engines. Integrating `closure.osm.ch` data would therefore definitely require a more **extensive** and **invasive** effort than the other mentioned engines.
 
 #### Mobile applications
 
