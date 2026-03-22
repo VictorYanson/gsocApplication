@@ -182,15 +182,15 @@ flowchart LR
     C --> D[Resolve to graph IDs]
     D --> E[Build & replace traffic.tar]
 ```
-##### Fetch & diff extrenal closure data
+##### Fetch & diff external closure data
 
 Before requesting any data from `closures.osm.ch`, the service finds out what area the core graph covers by extracting the **bbox** from the **Valhalla tile directory** (example: `/data/valhalla_tiles/'2/756/728.gph'`). Thereafter, `closure-sync` will poll `closures.osm.ch` on a user-configured **time interval** via HTTP by hitting its `GET /api/v1/closures` endpoint.
 
-On a succesful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closures.osm.ch` will be extended to accept a `updated_after=timestamp` query parameter to reduce network overhead. Nevertheless, `closure-sync` will require fallback diffing capabilities warranting an internal option. 
+On a successful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closures.osm.ch` will be extended to accept an `updated_after=timestamp` query parameter to reduce network overhead. Nevertheless, `closure-sync` will require fallback diffing capabilities warranting an internal option. 
 
 ##### Parse traffic geometry
 
-Despite returned closure objects from `closures.osm.ch` containing both **GeoJSON** and **OpenLR** for closure geometries, OpenLR is generally preferred for Valhalla [edge resolution](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824018) due to it's ineherent **map-agnosticism**.
+Despite returned closure objects from `closures.osm.ch` containing both **GeoJSON** and **OpenLR** for closure geometries, OpenLR is generally preferred for Valhalla [edge resolution](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824018) due to it's inherent **map-agnosticism**.
 
 Furthermore, while it is true that the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), it unfortunately doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
 
@@ -198,9 +198,9 @@ Furthermore, while it is true that the Valhalla already has an internal [OpenLR 
 
 ##### Resolve to graph IDs
 
-At this point, we hit a fork in the road where two viable approaches can possibly be used. Firstly, `pyvalhalla` already features a [`trace_attributes` method](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#trace-attributes-action) that takes a **GPS trace** or a set of **latitude/longitude positions** and returns the **attributes** of the graph edges along the trace including their `edge.id`. This call uses `meili` to map match the coordinates to the nearest valid graph edges introducing some **probabilistic** properties to the resolution, leading to an expected accuracy of [around 90%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028). This approach is reminiscent of the previously mentioned accurcy concerns in `closures.osm.ch`.
+At this point, we hit a fork in the road where two viable approaches can possibly be used. Firstly, `pyvalhalla` already features a [`trace_attributes` method](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#trace-attributes-action) that takes a **GPS trace** or a set of **latitude/longitude positions** and returns the **attributes** of the graph edges along the trace including their `edge.id`. This call uses `meili` to map match the coordinates to the nearest valid graph edges introducing some **probabilistic** properties to the resolution, leading to an expected accuracy of [around 90%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028). This approach is reminiscent of the previously mentioned accuracy concerns in `closures.osm.ch`.
 
-Alternativly, you can treat each **union of two succesive Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectivly increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a **valid contiguous road section**.
+Alternatively, you can treat each **union of two successive Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectively increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a **valid contiguous road section**.
 
 While the first option works to setup the **initial functionality** and can increase **stability** by serving as a **fallback resolver**, the second option should ideally be adopted as the **main approach**. 
 
@@ -254,12 +254,7 @@ Seeing as GSoC will solely follow the **initial phase** of `closure-sync`, here 
 
 #### Performance improvement
 
-<!-- 
-- Closure speed segment breakpoint support
-- traffic.tar race condition handling 
--->
-
-Once the service takes shape and all basic functionallity is present, major **performance bottlenecks** can gradually be identified. As the amount of handled closures increases, we can begin looking where **parallelisation** is [most beneficial](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029:~:text=if%20you%20parallelize%20the%20processing%20it%20should%20be%20fast%20to%20compute%20all%20the%20mappings%20of%20openlr%20to%20graph%20ids.%20and%20by%20fast%20i%20mean%20like%20less%20than%20an%20hour%20probably%20significantly%20less%20if%20you%20have%20a%20decent%20number%20of%20cores).
+Once the service takes shape and all basic functionality is present, major **performance bottlenecks** can gradually be identified. As the amount of handled closures increases, we can begin looking where **parallelisation** is [most beneficial](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824029:~:text=if%20you%20parallelize%20the%20processing%20it%20should%20be%20fast%20to%20compute%20all%20the%20mappings%20of%20openlr%20to%20graph%20ids.%20and%20by%20fast%20i%20mean%20like%20less%20than%20an%20hour%20probably%20significantly%20less%20if%20you%20have%20a%20decent%20number%20of%20cores).
 
 On top of that, to increase the **"ease of use factor"** we can consider a (partial) rewrite of the service into a **compiled language** like **Go**.
 
@@ -267,18 +262,13 @@ On top of that, to increase the **"ease of use factor"** we can consider a (part
 
 With **routing engine agnosticism** being one of `closure-sync`'s biggest points of interest, the logical continuation after Valhalla would be to adapt **more OSM routing engines**. Preliminary research indicates that the majority of the internal pipeline can be refactored for **OSRM**.
 
-**OSRM** uses a very similar system to Valhalla when it comes to dynamic traffic injestion. The only major difference being the **data format** in which [closures would be represented](https://github.com/Project-OSRM/osrm-backend/issues/3414#issuecomment-265624648). Namely, where Valhalla uses a .tar binary, OSRM uses a [**CSV file**](https://github.com/Project-OSRM/osrm-backend/wiki/Traffic).
+**OSRM** uses a very similar system to Valhalla when it comes to dynamic traffic ingestion. The only major difference being the **data format** in which [closures would be represented](https://github.com/Project-OSRM/osrm-backend/issues/3414#issuecomment-265624648). Namely, where Valhalla uses a .tar binary, OSRM uses a [**CSV file**](https://github.com/Project-OSRM/osrm-backend/wiki/Traffic).
 
 **Graphhopper** is where things start to get **tricky**. Their weighting API sadly **doesn't expose IDs** cleanly and the IDs themselves are [not stable](https://github.com/graphhopper/graphhopper/issues/917#:~:text=%2D9223372036854775806%20is%20fake,id%20is%20created%3F) during runtime, making identity based edge manipulation very difficult. There have been efforts to associate OSM [way](https://github.com/graphhopper/graphhopper/pull/2701) and [node](https://github.com/graphhopper/graphhopper/issues/917) IDs to the internal graph, but there's no existing **external data injection system** like in the other engines. Integrating `closure.osm.ch` data would therefore definitely require a more **extensive** and **invasive** effort than the other mentioned engines.
 
 #### Mobile applications
 
-- Apps like **Comaps** and **OSMand** are much more challenging
-- They are made to be offline first and thus don't have many option for dynamic runtime APIs
-- [They don't feature traffic integration through external sources](https://codeberg.org/comaps/comaps/issues/2460#:~:text=Road%20access%20is%20set%20at%20map%20generation%20time%2C%20so%20not%20easily%20amended%20AFAIK)
-- Server-style architecture won't work
-- If an adoption for `closure-sync` were to be made, the source-code of the apps would first need te be extended
-- Not impossible but a whole new kind of challenge
+For OSM-based mobile apps like **Comaps** and **OSMand**, where most if not all routing is done on-device, `closure-sync`'s sidecar architecture is not as viable. Both apps are made with an "**offline-first**" approach making their graphs inherently more [**static**](https://codeberg.org/comaps/comaps/issues/2460#:~:text=Road%20access%20is%20set%20at%20map%20generation%20time%2C%20so%20not%20easily%20amended%20AFAIK) than Valhalla or OSRM. If an adoption for `closure-sync` were to be made, the apps' **source-code** would significantly need to be **extended**. Not impossible but a whole new kind of challenge for sure.
 
 ### AI use
 
