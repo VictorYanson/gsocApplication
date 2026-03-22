@@ -1,8 +1,8 @@
 :root {
   --light-text: white;
   --dark-text: #333333;
-  --link-text: rgb(206, 158, 0);
-  --border-color: #0000004c;
+  --link-text: #ce9e00;
+  --border-color: #00000096;
 }
 
 html { background-color: var(--light-text); }
@@ -26,10 +26,11 @@ h1, h2, h3, h4, h5 {
   margin-bottom: 0.6em;
 }
 
-h1 { 
-  font-size: 2em;
-  border-bottom: 1px solid var(--border-color) !important;
+h1, h2 {
+  border-bottom: 1px solid var(--border-color) !important
 }
+
+h1 { font-size: 2em; }
 h2 { font-size: 1.75em; }
 h3 { font-size: 1.5em; }
 h4 { font-size: 1.25em; }

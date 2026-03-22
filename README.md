@@ -15,7 +15,7 @@ This document forms part of an application for Google’s Summer of Code 2026. I
   - [Context](#context)
   - [Problem](#problem)
   - [Solution](#solution)
-  - [Schedule for project completion](#schedule-for-project-completion)
+  - [Schedule \& milestones](#schedule--milestones)
   - [Continuation](#continuation)
   - [AI use](#ai-use)
 
@@ -58,7 +58,7 @@ Another notable personal project of mine was a basic **driver behavior simulator
 
 Firstly, I’d like to be frank about the fact that this will be **the only project**, and therefore OSM the only org, I’m planning on applying to this year. Throughout the last few months I’ve built up a comfortable amount of context and passion surrounding the issue at hand. I’ve had the chance to make contact with many of the project’s implied parties, and I honestly wouldn’t have the same confidence applying to another project.
 
-That being said, I would describe my entry into the community as a pleasant learning experience. My very first contact with OpenStreetMap was through the use of the **JavaScript Mapbox Graphics Library** for Focal Grid, although this was admittedly more of a passive interaction. The first active contact with the community started once I had decided on OSM as my target org in January. Throughout the research of the project I have become more aware of maintainer expectations and open-source etiquette as a whole. I’m happy to say that I’ve received thoughtful guidance from **Simon Poole** and **Archit Rathod** on the context surrounding closures.osm.ch. Moreover, I’ve gotten to engage with the **Valhalla project** as well as the maintainers behind it (see [contributions](#valhalla) below). Lastly, I had a great exchange with **Eggie**, one of the main map editors and moderators for the Dutch OSM community.
+That being said, I would describe my entry into the community as a pleasant learning experience. My very first contact with OpenStreetMap was through the use of the **JavaScript Mapbox Graphics Library** for Focal Grid, although this was admittedly more of a passive interaction. The first active contact with the community started once I had decided on OSM as my target org in January. Throughout the research of the project I have become more aware of maintainer expectations and open-source etiquette as a whole. I’m happy to say that I’ve received thoughtful guidance from **Simon Poole** and **Archit Rathod** on the context surrounding closures.osm.ch. Moreover, I’ve gotten to engage with the **Valhalla project** as well as the maintainers behind it (see [contributions](#contributions) below). Lastly, I had a great exchange with **Eggie**, one of the main map editors and moderators for the Dutch OSM community.
 
 #### Contributions
 
@@ -78,15 +78,15 @@ That being said, I would describe my entry into the community as a pleasant lear
 * **Graphhopper ([#3310](https://github.com/graphhopper/graphhopper/pull/3310#issuecomment-4063109510), [#3309](https://github.com/graphhopper/graphhopper/pull/3309#issuecomment-4063105628)):** PR linking and issue closure maintenance.  
 * **OSRM ([#7138](https://github.com/Project-OSRM/osrm-backend/issues/7138#issuecomment-4062987857)):** Metadata/Labeling maintenance
 
-##### Map data contributions
+##### Map data
 
-###### *Barcelona*
+###### Barcelona
 
 * [Changeset: 179776337](https://www.openstreetmap.org/changeset/179776337#map=19/41.413770/2.168254)  
 * [Changeset: 179257968](https://www.openstreetmap.org/changeset/179257968#map=19/41.413602/2.169304)  
 * [Changeset: 179135609](https://github.com/valhalla/valhalla/issues/5757#issuecomment-4061257896)
 
-###### *Nijmegen*
+###### Nijmegen
 
 * [Changeset: 178238893](https://www.openstreetmap.org/changeset/178238893#map=19/51.821180/5.861198)  
 * [Changeset: 178237957](https://www.openstreetmap.org/changeset/178237957#map=19/51.834761/5.883084)  
@@ -210,12 +210,41 @@ To create the initial live traffic skeleton binary we can call [`valhalla_build_
 
 Unfortunately, there's [no clean `pyvalhalla` method](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10892020) to inject the closure structs into the .tar skeleton. This means that we'll need to meticulously recreate the [traffic speed struct](https://github.com/valhalla/valhalla/blob/3.5.0/valhalla/baldr/traffictile.h#L52-L64) ourself using `struct` from the **Python standard library**.
 
-To efficiently write the closures we firstly open a `mmap` for each traffic tile contained in the .tar binary. Then, we can write the structs in-place to the correct location by calculating the [offset](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285) and using the edge ID as its index. Finally, we flush and close the `mmap`, repeating this for every tile file in the .tar binary until completing the graph.
+To efficiently write the closures we firstly open an `mmap` for each traffic tile contained in the .tar binary. Then, we can write the structs in-place to the correct location by calculating the [offset](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285) and using the edge ID as its index. Finally, we flush and close the `mmap`, repeating this for every tile file in the .tar binary until completing the graph.
 
-### Schedule for project completion
+### Schedule & milestones
 
-- **Week 1:** setup communication, setup environment, elaborate project plan
-- **Week 2:** 
+- **Week 1-2:** 
+  - Setup communications & development environment
+  - Validation research
+  - Baseline benchmarking
+- **Week 3-4:**
+  - `closure.osm.ch` polling & diffing mechanism
+  - Containerized sidecar setup
+  - Basic edge resolution with GeoJSON & `trace_attributes`
+- **Week 4-5:**
+  - OpenLR upstream contribution
+  - Setup geometry decoding
+- **Week 6-7:**
+  - Edge ID tracing with routing requests approach
+  - Benchmarking accuracies for both approaches
+  - Fallback mechanism setup
+- **Week 8-9:**
+  - Implement struct packing
+  - Offset handling
+  - Handling tile indexing logic
+- **Week 10-11:**
+  - Opening and managing memory-mapped files
+  - Ensuring safe writes
+  - Race condition handling
+- **Week 12-13:**
+  - Orchastration main service loop
+  - Handling failures without breaking routing engine
+  - Logging + observability
+- **Week 14-15:**
+  - Writing extensive documentation
+  - Finishing full test suite
+  - Upstream `updated_after` query param contribution
 
 ### Continuation
 
