@@ -268,12 +268,12 @@ With **routing engine agnosticism** being one of `closure-sync`'s biggest points
 
 #### Mobile applications
 
-For OSM-based mobile apps like **Comaps** and **OSMand**, where most if not all routing is done on-device, `closure-sync`'s sidecar architecture is not as viable. Both apps are made with an "**offline-first**" approach making their graphs inherently more [**static**](https://codeberg.org/comaps/comaps/issues/2460#:~:text=Road%20access%20is%20set%20at%20map%20generation%20time%2C%20so%20not%20easily%20amended%20AFAIK) than Valhalla or OSRM. If an adoption for `closure-sync` were to be made, the apps' **source-code** would significantly need to be **extended**. Not impossible but a whole new kind of challenge for sure.
+For OSM-based mobile apps like **Comaps** and **OSMand**, where most if not all routing is done on-device, `closure-sync`'s sidecar architecture is not as viable. Both apps are made with an "**offline-first**" approach making their graphs inherently more [**static**](https://codeberg.org/comaps/comaps/issues/2460#:~:text=Road%20access%20is%20set%20at%20map%20generation%20time%2C%20so%20not%20easily%20amended%20AFAIK) than Valhalla or OSRM. If an adoption for `closure-sync` were to be made, the apps' **source-code** would significantly need to be **extended**. Not impossible, but a whole new kind of challenge for sure.
 
 ### AI use
 
-- GitHub Repo of this proposal
-- Near-zero AI written content (all the bold text and formatting was by myself)
-- Throughout the whole process AI has helped me managed the confusion of being a FOSS newbie
-- I used AI to bounce off some ideas in areas where I'm less familiar
-  - Example: file IO for .tar files where I couldn't easily find any documentation/previous discussions on the topic **AND** project scheduling
+Over the last few months I have made extensive use of AI to assist me in my preparations for GSoC. Coming from a background oblivious to open-source structures and etiquette, the use of AI has helped to guide me through the (at times quite confusing) process.
+
+Nevertheless, I'm fully aware of the cognitive dept and false sense of confidence AI tools can inspire. Due to this, I have made an effort to "wean off" AI tools as the submission period approached. I can say in full honesty that this submission is near 100% human written. I have tried to build a genuine understanding of all the topics I'm proposing, hence the many links to sources.
+
+I HAVE used AI in the writing of this proposal in areas where I'm less familiar and where no detailed documentation could easily be found (e.g. .tar file IO, milestone planning). Here, I used AI to gain a base-level understanding and to bounce off ideas, never blindly copying the output's content.
