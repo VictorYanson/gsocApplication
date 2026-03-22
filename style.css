@@ -5,7 +5,11 @@
   --border-color: #00000096;
 }
 
-html { background-color: var(--light-text); }
+html { 
+  background-color: var(--light-text);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding:  0;
+}
 
 * { color: var(--dark-text); }
 
@@ -17,13 +21,17 @@ a strong { color: var(--link-text) !important; }
 
 .mermaid p { color: var(--light-text) !important; }
 
-code { background-color: #0000000d; }
+code { 
+  background-color: #0000000d;
+  color: black;
+}
 
 a code{ color: var(--link-text) !important; }
 
 h1, h2, h3, h4, h5 {
   line-height: 1.2;
   margin-bottom: 0.6em;
+  font-weight: 500;
 }
 
 h1, h2 {
@@ -39,3 +47,5 @@ h5, h6 { font-size: 1em; }
 table th, table td {
   border: 1px solid var(--border-color) !important;
 }
+
+table { width: max-content; }

@@ -84,7 +84,7 @@ That being said, I would describe my entry into the community as a pleasant lear
 
 * [Changeset: 179776337](https://www.openstreetmap.org/changeset/179776337#map=19/41.413770/2.168254)  
 * [Changeset: 179257968](https://www.openstreetmap.org/changeset/179257968#map=19/41.413602/2.169304)  
-* [Changeset: 179135609](https://github.com/valhalla/valhalla/issues/5757#issuecomment-4061257896)
+* [Changeset: 179135609](https://www.openstreetmap.org/changeset/179135609#map=19/41.413182/2.169882)
 
 ###### Nijmegen
 
@@ -147,24 +147,25 @@ The project adopts a **sidecar deployment pattern** to fulfill the core requirem
 
 The service functions by asynchronously ingesting data from `closures.osm.ch` and translating it into a **native closure overlay format** compatible with the routing engine's internal traffic APIs. 
 
-```mermaid  
-graph TD  
-    DB[closures.osm.ch API] -->|"HTTP Poll"| B
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+graph TD
+  DB[closures.osm.ch API] -->|"HTTP Poll"| B
 
-    subgraph Host Environment  
-        direction TB  
-        B[Closure Sync Container]  
-        C[(Closure Overlay)]  
-        A[Routing Engine Container]  
-    end
+  subgraph Host Environment
+    direction TB
+    B[Closure Sync Container]
+    C[(Closure Overlay)]
+    A[Routing Engine Container]
+  end
 
-    B -->|"Generate / Update"| C  
-    A -->|"Read"| C  
+  B -->|"Generate / Update"| C
+  A -->|"Read"| C
 ```
 
 #### Valhalla
 
-Before moving on, it’s important to mention that for the GSoC project `closure-sync`’s **scope** will be limited to the Valhalla routing engine integration. For more information on the continuation of the project after GSoC see ‘[Continuation](?tab=t.lh72md2ytuu#heading=h.b3b327fctu5s)’.
+Before moving on, it’s important to mention that for the GSoC project `closure-sync`’s **scope** will be limited to the Valhalla routing engine integration. For more information on the continuation of the project after GSoC see ‘[Continuation](#continuation)’.
 
 The choice for Valhalla’s initial integration is thanks to its **widespread adoption** in the OSM community and its compatibility with the existing `closures.osm.ch` structures. Moreover, Valhalla’s **`pyvalhalla`** library offers an excellent high-level interface for graph interactions.
 
@@ -176,11 +177,12 @@ Having originally proposed the addition of helper functions in Valhalla’s core
 
 `closure-sync`'s core loop can be summarized by the following the steps:
 ```mermaid
+%%{init: {'theme': 'dark'}}%%
 flowchart LR
-    B[Fetch & diff closure data]
-    B --> C[Parse traffic geometry]
-    C --> D[Resolve to graph IDs]
-    D --> E[Build & replace traffic.tar]
+  B[Fetch & diff closure data]
+  B --> C[Parse traffic geometry]
+  C --> D[Resolve to graph IDs]
+  D --> E[Build & replace traffic.tar]
 ```
 ##### Fetch & diff external closure data
 
@@ -198,19 +200,19 @@ Furthermore, while it is true that the Valhalla already has an internal [OpenLR 
 
 ##### Resolve to graph IDs
 
-At this point, we hit a fork in the road where two viable approaches can possibly be used. Firstly, `pyvalhalla` already features a [`trace_attributes` method](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#trace-attributes-action) that takes a **GPS trace** or a set of **latitude/longitude positions** and returns the **attributes** of the graph edges along the trace including their `edge.id`. This call uses `meili` to map match the coordinates to the nearest valid graph edges introducing some **probabilistic** properties to the resolution, leading to an expected accuracy of [around 90%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028). This approach is reminiscent of the previously mentioned accuracy concerns in `closures.osm.ch`.
+At this point, we hit a fork in the road where two viable approaches can possibly be used. Firstly, `pyvalhalla` already features a [`trace_attributes` method](https://github.com/valhalla/valhalla/blob/master/docs/docs/api/map-matching/api-reference.md#trace-attributes-action) that takes a **GPS trace** or a set of **latitude/longitude positions** and returns the **attributes** of the graph edges along the trace including their `edge.id`. This call uses `meili` to map match the coordinates to the nearest valid graph edges introducing some **probabilistic** properties to the resolution, leading to an expected accuracy of [around 90%](https://github.com/valhalla/valhalla/discussions/5391#:~:text=i%20wouldnt%20be%20surprised%20if%20even%2090%25%20of%20the%20openlrs%20had%20clean%20matches.). This approach is reminiscent of the previously mentioned accuracy concerns in `closures.osm.ch`.
 
-Alternatively, you can treat each **union of two successive Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectively increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824028) by assuring the edges form a **valid contiguous road section**.
+Alternatively, you can treat each **union of two successive Location Reference Points** as a **separate routing request** to trace the closure along each graph edge, storing their corresponding IDs along the way. This effectively increases the trace accuracy to [99%](https://github.com/valhalla/valhalla/discussions/5391#:~:text=at%20the%20current%20moment%2C%20it%20is%20not%20viable%20as%20meili%20doesnt%20have%20the%20controls%20to%20allow%20for%20proper%20matching%20(ie%20matching%20%3E%2099%25%20of%20openlrs).%20if%20you%20read%20the%20pseudo%20code%20above%20you%27ll%20see%20a%20few%20things%20that%20just%20arent%20there%20in%20the%20map%20matching%20api%3A) by assuring the edges form a **valid contiguous road section**.
 
 While the first option works to setup the **initial functionality** and can increase **stability** by serving as a **fallback resolver**, the second option should ideally be adopted as the **main approach**. 
 
 ##### Build & replace traffic.tar
 
-To create the initial live traffic skeleton binary we can call [`valhalla_build_extract --with-traffic`](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10829927) once at setup time. This will scaffold the tile structure with the corresponding headers and reserves zero bytes for the edges.
+To create the initial live traffic skeleton binary we can call [`valhalla_build_extract --with-traffic`](https://github.com/valhalla/valhalla/discussions/4256#:~:text=easy.%20the%20script-,valhalla_build_extract,-has%20an%20option) once at setup time. This will scaffold the tile structure with the corresponding headers and reserves zero bytes for the edges.
 
-Unfortunately, there's [no clean `pyvalhalla` method](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-10892020) to inject the closure structs into the .tar skeleton. This means that we'll need to meticulously recreate the [traffic speed struct](https://github.com/valhalla/valhalla/blob/3.5.0/valhalla/baldr/traffictile.h#L52-L64) ourself using `struct` from the **Python standard library**.
+Unfortunately, there's [no clean `pyvalhalla` method](https://github.com/valhalla/valhalla/discussions/4256#discussioncomment-10892020) to inject the closure structs into the .tar skeleton. This means that we'll need to meticulously recreate the [traffic speed struct](https://github.com/valhalla/valhalla/blob/3.5.0/valhalla/baldr/traffictile.h#L52-L64) ourself using `struct` from the **Python standard library**.
 
-To efficiently write the closures we firstly open an `mmap` for each traffic tile contained in the .tar binary. Then, we can write the structs in-place to the correct location by calculating the [offset](https://github.com/valhalla/valhalla/discussions/4256?utm_source=chatgpt.com#discussioncomment-13769285) and using the edge ID as its index. Finally, we flush and close the `mmap`, repeating this for every tile file in the .tar binary until completing the graph.
+To efficiently write the closures we firstly open an `mmap` for each traffic tile contained in the .tar binary. Then, we can write the structs in-place to the correct location by calculating the [offset](https://github.com/valhalla/valhalla/discussions/4256discussioncomment-13769285#discussioncomment-13769285) and using the edge ID as its index. Finally, we flush and close the `mmap`, repeating this for every tile file in the .tar binary until completing the graph.
 
 ### Schedule & milestones
 
@@ -262,7 +264,7 @@ On top of that, to increase the **"ease of use factor"** we can consider a (part
 
 With **routing engine agnosticism** being one of `closure-sync`'s biggest points of interest, the logical continuation after Valhalla would be to adapt **more OSM routing engines**. Preliminary research indicates that the majority of the internal pipeline can be refactored for **OSRM**.
 
-**OSRM** uses a very similar system to Valhalla when it comes to dynamic traffic ingestion. The only major difference being the **data format** in which [closures would be represented](https://github.com/Project-OSRM/osrm-backend/issues/3414#issuecomment-265624648). Namely, where Valhalla uses a .tar binary, OSRM uses a [**CSV file**](https://github.com/Project-OSRM/osrm-backend/wiki/Traffic).
+**OSRM** uses a very similar system to Valhalla when it comes to **dynamic traffic ingestion**. The only major difference being the **data format** in which [closures would be represented](https://github.com/Project-OSRM/osrm-backend/issues/3414#issuecomment-265624648). Namely, where Valhalla uses a .tar binary, OSRM uses a [**CSV file**](https://github.com/Project-OSRM/osrm-backend/wiki/Traffic).
 
 **Graphhopper** is where things start to get **tricky**. Their weighting API sadly **doesn't expose IDs** cleanly and the IDs themselves are [not stable](https://github.com/graphhopper/graphhopper/issues/917#:~:text=%2D9223372036854775806%20is%20fake,id%20is%20created%3F) during runtime, making identity based edge manipulation very difficult. There have been efforts to associate OSM [way](https://github.com/graphhopper/graphhopper/pull/2701) and [node](https://github.com/graphhopper/graphhopper/issues/917) IDs to the internal graph, but there's no existing **external data injection system** like in the other engines. Integrating `closure.osm.ch` data would therefore definitely require a more **extensive** and **invasive** effort than the other mentioned engines.
 
@@ -276,4 +278,4 @@ Over the last few months I have made extensive use of AI to assist me in my prep
 
 Nevertheless, I'm fully aware of the cognitive dept and false sense of confidence AI tools can inspire. Due to this, I have made an effort to "wean off" AI tools as the submission period approached. I can say in full honesty that this submission is near 100% human written. I have tried to build a genuine understanding of all the topics I'm proposing, hence the many links to sources.
 
-I HAVE used AI in the writing of this proposal in areas where I'm less familiar and where no detailed documentation could easily be found (e.g. .tar file IO, milestone planning). Here, I used AI to gain a base-level understanding and to bounce off ideas, never blindly copying the output's content.
+I HAVE used AI in the writing of this proposal in areas where I'm less familiar, and where no detailed documentation could easily be found (e.g. .tar file IO, milestone planning). Here, I used AI to gain a base-level understanding and to bounce off ideas, never blindly copying the output's content.
