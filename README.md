@@ -2,7 +2,7 @@
 
 # GSoC 2026 — Victor Yanson
 
-This document forms part of an application for Google’s Summer of Code 2026. It encompasses the applicants personal information and experience as well as a detailed project proposal. The project stems from a mentor project idea put forth by Simon Poole and can thus be found on the official OSM [GSoC 2026 project idea page](https://wiki.openstreetmap.org/wiki/Google_Summer_of_Code/2026/Project_ideas#Routing) under the ‘Routing’ category.
+This document forms part of an application for Google’s Summer of Code 2026. It encompasses the applicant's personal information and experience as well as a detailed project proposal. The project stems from a mentor project idea put forth by Simon Poole and can thus be found on the official OSM [GSoC 2026 project idea page](https://wiki.openstreetmap.org/wiki/Google_Summer_of_Code/2026/Project_ideas#Routing) under the ‘Routing’ category.
 
 - [General information](#general-information)
   - [Personal information](#personal-information)
@@ -50,9 +50,9 @@ My day-to-day language is **TypeScript**, although I’m very comfortable with *
 
 A big part of my professional projects have involved creating AI automation tools and chatbots alongside setting up and maintaining e-commerce pages. While these are my “bread-and-butter” projects, I see them as a consistent foundation for more specialized work later on.
 
-A fundamental project for me has been the creation of a GIS-based app called **Focal Grid**. I was essentially put in charge of making the first version of a full-stack web app built to visualize Dutch public energy network data. This project introduced me to lots of core GIS concepts like **PostGIS**, **vector tiles**, and **GeoJSON**. Moreover, it sparked a genuine interest in GIS technology in me. This project took place during the end of last year, which was also the moment I discovered GSoC. I have gained permission from the client to share some details about the project which you can find [here](https://replace-with-acutal-url.com).
+A fundamental project for me has been the creation of a GIS-based app called **Focal Grid**. I was essentially put in charge of making the first version of a full-stack web app built to visualize Dutch public energy network data. This project introduced me to lots of core GIS concepts like **PostGIS**, **vector tiles**, and **GeoJSON**. Moreover, it sparked a genuine interest in GIS technology in me. This project took place during the end of last year, which was also the moment I discovered GSoC. I have gained permission from the client to share some details about the project which you can find [here](https://github.com/VictorYanson/FocalGridTechnicalOverview).
 
-Another notable personal project of mine was a basic **driver behavior simulator** written in C++. The main goal of the project was to recreate realistic acceleration and braking behavior in a multi-car single lane situation. The driving behavior is defined by the [**Intelligent Driver Model**](https://en.wikipedia.org/wiki/Intelligent_driver_model) and for the visualization I used **RayLib**. Feel free to check out the project [here](https://replace-with-acutal-url.com).
+Another notable personal project of mine was a basic **driver behavior simulator** written in C++. The main goal of the project was to recreate realistic acceleration and braking behavior in a multi-car single lane situation. The driving behavior is defined by the [**Intelligent Driver Model**](https://en.wikipedia.org/wiki/Intelligent_driver_model) and for the visualization I used **RayLib**. Feel free to check out the project [here](https://github.com/VictorYanson/trafficSimulation).
 
 ### Community involvement
 
@@ -98,7 +98,7 @@ Without getting into too much detail, my personal situation allows me to focus t
 
 Additionally, I’m currently in the midst of a client project. However, the project is foreseen to finalize mid-April, after which I don’t have any other major projects lined up. 
 
-Lastly, I’m honestly not quite sure yet what vacation plans will arise come summertime. Nevertheless, if any trips come up, I can assure they won’t be more than a **weekend getaway**. Of course, I will be sure to keep my mentor up to date might anything come up.
+Lastly, I’m honestly not quite sure yet what vacation plans will arise come summertime. Nevertheless, if any trips come up, I can assure they won’t be more than a **weekend getaway**. Of course, I will be sure to keep my mentor up to date should anything come up.
 
 ## Project proposal
 
@@ -135,7 +135,7 @@ While the aforementioned routing mechanism was meant as a functional proof of co
 
 #### Considerations
 
-During the elaboration of a possible technical solution, a handful of key considerations were kept in mind:
+During the elaboration of a possible technical solution, a handful of key considerations were taken into account:
 
 1. **Ease of use:** Having a “plug and play” setup for any combination of supported routing engines and host systems with minimal to no configuration.  
 2. **Non-blocking:** Protecting the engine’s hot path from obstructions, even if the `closure-sync` service malfunctions.  
@@ -276,6 +276,6 @@ For OSM-based mobile apps like **Comaps** and **OSMand**, where most if not all 
 
 Over the last few months I have made extensive use of AI to assist me in my preparations for GSoC. Coming from a background oblivious to open-source structures and etiquette, the use of AI has helped to guide me through the (at times quite confusing) process.
 
-Nevertheless, I'm fully aware of the cognitive dept and false sense of confidence AI tools can inspire. Due to this, I have made an effort to "wean off" AI tools as the submission period approached. I can say in full honesty that this submission is near 100% human written. I have tried to build a genuine understanding of all the topics I'm proposing, hence the many links to sources.
+Nevertheless, I'm fully aware of the cognitive debt and false sense of confidence AI tools can inspire. Due to this, I have made an effort to "wean off" AI tools as the submission period approached. I can say in full honesty that this submission is near 100% human written. I have tried to build a genuine understanding of all the topics I'm proposing, hence the many links to sources.
 
 I HAVE used AI in the writing of this proposal in areas where I'm less familiar, and where no detailed documentation could easily be found (e.g. .tar file IO, milestone planning). Here, I used AI to gain a base-level understanding and to bounce off ideas, never blindly copying the output's content.
