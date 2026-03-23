@@ -127,7 +127,7 @@ As of now, `closures.osm.ch` handles closure-aware routing almost entirely [on t
 While the aforementioned routing mechanism was meant as a functional proof of concept, it presents several important limitations:
 
 1. **Inefficient request flow:** Closure aware routing currently involves **fetching** closure data from the backend, **processing** it on the client, and **injecting** it into the routing request. Running this flow on every request introduces latency and unnecessary overhead.
-2. **Poor separation of concerns:** Having the client take charge fetching and normalizing closures means that every application using `closures.osm.ch` will need to reimplement its own version of closure-aware routing.  
+2. **Poor separation of concerns:** Having the client take charge of fetching and normalizing closures means that every application using `closures.osm.ch` will need to reimplement its own version of closure-aware routing.  
 3. **API limits:** The current implementation limits routing queries to [50 points](https://github.com/Archit1706/temporary-road-closures/blob/77c69fd799115272776a49d509d950787c857b87/frontend/app/closure-aware-routing/page.tsx#L149). This limits usability to small **bbox** areas with few closure coordinates.  
 4. **Routing accuracy:** The `exclude_locations` parameter maps geometries to their closest graph edge in Valhalla during runtime. Ideally closures will get mapped directly to their corresponding edge IDs **before** the routing request happens.
 
@@ -165,7 +165,7 @@ graph TD
 
 #### Valhalla
 
-Before moving on, it’s important to mention that for the GSoC project `closure-sync`’s **scope** will be limited to the Valhalla routing engine integration. For more information on the continuation of the project after GSoC see ‘[Continuation](#continuation)’.
+Before moving on, it’s important to mention that for the GSoC project `closure-sync`’s **scope** will be limited to the Valhalla routing engine's integration. For more information on the continuation of the project after GSoC see ‘[Continuation](#continuation)’.
 
 The choice for Valhalla’s initial integration is thanks to its **widespread adoption** in the OSM community and its compatibility with the existing `closures.osm.ch` structures. Moreover, Valhalla’s **`pyvalhalla`** library offers an excellent high-level interface for graph interactions.
 
@@ -186,7 +186,7 @@ flowchart LR
 ```
 ##### Fetch & diff external closure data
 
-Before requesting any data from `closures.osm.ch`, the service finds out what area the core graph covers by extracting the **bbox** from the **Valhalla tile directory** (example: `/data/valhalla_tiles/'2/756/728.gph'`). Thereafter, `closure-sync` will poll `closures.osm.ch` on a user-configured **time interval** via HTTP by hitting its `GET /api/v1/closures` endpoint.
+Before requesting any data from `closures.osm.ch`, the service finds out what area the core graph's `bbox` covers by scanning the **Valhalla tile directory**. Thereafter, `closure-sync` will poll `closures.osm.ch` on a user-configured **time interval** via HTTP by hitting its `GET /api/v1/closures` endpoint.
 
 On a successful response `closure-sync` will parse the JSON response and diff for any updated closure data. Ideally, throughout the project `closures.osm.ch` will be extended to accept an `updated_after=timestamp` query parameter to reduce network overhead. Nevertheless, `closure-sync` will require fallback diffing capabilities warranting an internal option. 
 
@@ -194,7 +194,7 @@ On a successful response `closure-sync` will parse the JSON response and diff fo
 
 Despite returned closure objects from `closures.osm.ch` containing both **GeoJSON** and **OpenLR** for closure geometries, OpenLR is generally preferred for Valhalla [edge resolution](https://github.com/valhalla/valhalla/discussions/5391#discussioncomment-13824018) due to it's inherent **map-agnosticism**.
 
-Furthermore, while it is true that the Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), it unfortunately doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
+Furthermore, while it is true that Valhalla already has an internal [OpenLR decoder](https://github.com/valhalla/valhalla/blob/master/valhalla/baldr/openlr.h), it unfortunately doesn't have a **Python binding** yet. In the meantime, a **pip package** like `openlr` can be used for OpenLR string decoding.
 
 **Note:** [PoC testing](https://github.com/VictorYanson/gsoc-pyvalhalla-test/blob/main/notebooks/openlr-error.ipynb) suggests the current OpenLR implementation in the `closures.osm.ch` backend is not yet fully aligned with the standard. Upstream contributions to address this will be considered within the scope of the project.
 
@@ -270,12 +270,12 @@ With **routing engine agnosticism** being one of `closure-sync`'s biggest points
 
 #### Mobile applications
 
-For OSM-based mobile apps like **Comaps** and **OSMand**, where most if not all routing is done on-device, `closure-sync`'s sidecar architecture is not as viable. Both apps are made with an "**offline-first**" approach making their graphs inherently more [**static**](https://codeberg.org/comaps/comaps/issues/2460#:~:text=Road%20access%20is%20set%20at%20map%20generation%20time%2C%20so%20not%20easily%20amended%20AFAIK) than Valhalla or OSRM. If an adoption for `closure-sync` were to be made, the apps' **source-code** would significantly need to be **extended**. Not impossible, but a whole new kind of challenge for sure.
+For OSM-based mobile apps like **Comaps** and **OsmAnd**, where most if not all routing is done on-device, `closure-sync`'s sidecar architecture is not as viable. Both apps are made with an "**offline-first**" approach making their graphs inherently more [**static**](https://codeberg.org/comaps/comaps/issues/2460#:~:text=Road%20access%20is%20set%20at%20map%20generation%20time%2C%20so%20not%20easily%20amended%20AFAIK) than Valhalla or OSRM. If an adoption for `closure-sync` were to be made, the apps' **source-code** would significantly need to be **extended**. Not impossible, but a whole new kind of challenge for sure.
 
 ### AI use
 
 Over the last few months I have made extensive use of AI to assist me in my preparations for GSoC. Coming from a background oblivious to open-source structures and etiquette, the use of AI has helped to guide me through the (at times quite confusing) process.
 
-Nevertheless, I'm fully aware of the cognitive debt and false sense of confidence AI tools can inspire. Due to this, I have made an effort to "wean off" AI tools as the submission period approached. I can say in full honesty that this submission is near 100% human written. I have tried to build a genuine understanding of all the topics I'm proposing, hence the many links to sources.
+Nevertheless, I'm fully aware of the cognitive debt and false sense of confidence AI tools can inspire. Due to this, I have made an effort to "wean off" AI tools as the submission period approached. I can say in full honesty that this submission is near 100% human written. I have tried to build a genuine understanding of all the topics I'm proposing, hence the many [links to sources](https://github.com/VictorYanson/gsocApplication).
 
 I HAVE used AI in the writing of this proposal in areas where I'm less familiar, and where no detailed documentation could easily be found (e.g. .tar file IO, milestone planning). Here, I used AI to gain a base-level understanding and to bounce off ideas, never blindly copying the output's content.
