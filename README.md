@@ -69,8 +69,8 @@ That being said, I would describe my entry into the community as a pleasant lear
 
 ##### Closures.osm.ch
 
-* [**PR #21**](https://github.com/Archit1706/temporary-road-closures/pull/21)**:** Fixed MacOS Docker build compatibility and startup crashes.  
-* [**PR #22**](https://github.com/Archit1706/temporary-road-closures/pull/22)**:** Integrated `vitest` and added unit tests for Valhalla-related frontend logic.  
+* [**PR #21**](https://github.com/Archit1706/temporary-road-closures/pull/21)**:** Fixed MacOS Docker build compatibility and startup crashes. 
+* [**PR #22**](https://github.com/Archit1706/temporary-road-closures/pull/22)**:** Integrated `vitest` and added unit tests for Valhalla-related frontend logic. (**Merged**)
 * [**Issue #25**](https://github.com/Archit1706/temporary-road-closures/issues/25)**/[#27](https://github.com/Archit1706/temporary-road-closures/issues/27):** Identified redundant `valhallaApi` code and gaps in query parameter documentation.
 
 ##### Ecosystem (triage & maintenance)
