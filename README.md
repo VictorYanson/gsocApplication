@@ -71,7 +71,7 @@ That being said, I would describe my entry into the community as a pleasant lear
 
 * [**PR #21**](https://github.com/Archit1706/temporary-road-closures/pull/21)**:** Fixed MacOS Docker build compatibility and startup crashes. 
 * [**PR #22**](https://github.com/Archit1706/temporary-road-closures/pull/22)**:** Integrated `vitest` and added unit tests for Valhalla-related frontend logic. (**Merged**)
-* [**PR #22**](https://github.com/Archit1706/temporary-road-closures/pull/35)**:** Added poetry.lock for backend build reliability
+* [**PR #35**](https://github.com/Archit1706/temporary-road-closures/pull/35)**:** Added poetry.lock for backend build reliability.
 * [**Issue #25**](https://github.com/Archit1706/temporary-road-closures/issues/25)**/[#27](https://github.com/Archit1706/temporary-road-closures/issues/27):** Identified redundant `valhallaApi` code and gaps in query parameter documentation.
 
 ##### Ecosystem (triage & maintenance)
