@@ -34,7 +34,7 @@ This document forms part of an application for Google’s Summer of Code 2026. I
 
 ### Bio
 
-Hi! My name is **Victor**. I’m a **23 year old freelance web developer** from the **Netherlands**. About a year ago I completed my **Bachelor's in Business Administration** after which I pivoted into freelance web dev. Working on various projects, I’ve been progressively working my way down the stack, having developed a recent interest in performance computing. Currently living between Nijmegen in the Netherlands and Barcelona, Spain, where my partner’s from. Additionally, I’m taking maths courses in preparation for a Master’s program in **Industrial Mathematics**.
+Hi! My name is **Victor**. I’m a **23 year old freelance web developer** from the **Netherlands**. About a year ago I completed my **Bachelor's in Business Administration** after which I pivoted into freelance web dev. Working on various projects, I’ve been progressively working my way down the stack, having developed a recent interest in performance computing. Currently living between Nijmegen in the Netherlands and Barcelona, Spain, where my partner is from. Additionally, I’m taking maths courses in preparation for a Master’s program in **Industrial Mathematics**.
 
 ### Relevant experience
 
@@ -71,6 +71,7 @@ That being said, I would describe my entry into the community as a pleasant lear
 
 * [**PR #21**](https://github.com/Archit1706/temporary-road-closures/pull/21)**:** Fixed MacOS Docker build compatibility and startup crashes. 
 * [**PR #22**](https://github.com/Archit1706/temporary-road-closures/pull/22)**:** Integrated `vitest` and added unit tests for Valhalla-related frontend logic. (**Merged**)
+* [**PR #22**](https://github.com/Archit1706/temporary-road-closures/pull/35)**:** Added poetry.lock for backend build reliability
 * [**Issue #25**](https://github.com/Archit1706/temporary-road-closures/issues/25)**/[#27](https://github.com/Archit1706/temporary-road-closures/issues/27):** Identified redundant `valhallaApi` code and gaps in query parameter documentation.
 
 ##### Ecosystem (triage & maintenance)
@@ -275,7 +276,7 @@ For OSM-based mobile apps like **Comaps** and **OsmAnd**, where most if not all 
 ### AI use
 
 Over the last few months I have made extensive use of AI to assist me in my preparations for GSoC. Coming from a background oblivious to open-source structures and etiquette, the use of AI has helped to guide me through the (at times quite confusing) process.
-
+ 
 Nevertheless, I'm fully aware of the cognitive debt and false sense of confidence AI tools can inspire. Due to this, I have made an effort to "wean off" AI tools as the submission period approached. I can say in full honesty that this submission is near 100% human written. I have tried to build a genuine understanding of all the topics I'm proposing, hence the many [links to sources](https://github.com/VictorYanson/gsocApplication).
 
 I HAVE used AI in the writing of this proposal in areas where I'm less familiar, and where no detailed documentation could easily be found (e.g. .tar file IO, milestone planning). Here, I used AI to gain a base-level understanding and to bounce off ideas, never blindly copying the output's content.
